@@ -1,0 +1,20 @@
+{
+    "name": "First chrome extension",
+    "version": "0.1",
+    "description": "Try new thing",
+    "manifest_version": 2,
+
+    "web_accessible_resources": [
+        "data/info.json",
+        "data/sk_SK.dic"
+    ],
+    "content_scripts": [
+        {
+        "matches": [
+            "http://*/*",
+            "https://*/*"
+            ],
+        "js": ["content.js"]
+        }
+    ]
+}
