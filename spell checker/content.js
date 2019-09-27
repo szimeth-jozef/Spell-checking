@@ -1,3 +1,5 @@
+/* This spell checker do not consist names. */
+
 const url = chrome.runtime.getURL('./data/sk_SK.dic');
 let readyToCheck = false;
 let dict;
@@ -22,7 +24,7 @@ function main() {
     // Just for debugging
     for (let i = 0; i < paragraphs.length; i++) {
         content[i].check();
-        paragraphs[i].innerHTML = content[i].getNewP();
+        // paragraphs[i].innerHTML = content[i].getpNewInnerHTML();
     }
 }
 
@@ -31,7 +33,7 @@ function spellCheck(paragraphs, content) {
     if (readyToCheck){
         for (let i = 0; i < paragraphs.length; i++) {
             content[i].check();
-            paragraphs[i].innerHTML = content[i].getNewP();
+            paragraphs[i].innerHTML = content[i].getpNewInnerHTML();
         }
     }
 }
@@ -63,34 +65,40 @@ function parseDic(data) {
 }
 
 class VirtualParagraph {
+    /* VirtualParagraph gets innerText of one of the paragraphs then from innerText it detects words 
+    and right after a word is detected it is compared with words in the dictionary.If a word is not matching, it
+    is probably misspelled so the word gets wrapped in span tags and it's added to pNewInnerHTML. The word are
+    added to pNewInnerHTML whether it's correct or misspelled otherwise the updated innerHTML of a paraghraph
+    would be incomplete */
     constructor(paragraph)  {
-        this.pInnerHTML = paragraph.innerHTML;
+        this.pInnerText = paragraph.innerText;
         this.currentIndex = 0;
-        this.isIgnoring = false;
-        this.newP;
+        this.currentWord = '';
+        this.pNewInnerHTML = '';
     }
 
     check() {
-        // for (let i = 0; i < this.pInnerHTML.length; i++) {
-        //     console.log(this.pInnerHTML[i]);
-        // }
-        console.log(this.pInnerHTML);
-        console.log(this.pInnerHTML[0]);
-        console.log(this.pInnerHTML[1]);
-        console.log(this.pInnerHTML[2]);
-        console.log(this.pInnerHTML[3]);
-        console.log(this.pInnerHTML[4]);
-        console.log(this.pInnerHTML[5]);
-        console.log(this.pInnerHTML[6]);
-        console.log(this.pInnerHTML[7]);
-        console.log(this.pInnerHTML[8]);
-        console.log(this.pInnerHTML[9]);
-        console.log(this.pInnerHTML[10]);
-        this.newP = this.pInnerHTML + '<span class="highlight">Added text</span>';
+        for (let i = 0; i < this.pInnerText.length; i++) {
+            if (this.pInnerText[i] === ' ') {
+                this.getRidOfPunctuation();
+                //let result = this.compare(this.currentWord);
+                // this.addWord(this.currentWord, this.currentIndex, result);
+                console.log("This word is now compared", this.currentWord);
+                this.currentWord = '';
+            } else {
+                this.currentWord += this.pInnerText[i];
+            }
+            this.currentIndex++;
+        }
     }
 
-    getNewP() {
-        return this.newP;
+    getRidOfPunctuation() {
+        const regex = /[.,\/#!$%\^&\*;:{}=\-_`~()]/g;
+        this.currentWord = this.currentWord.replace(regex, ""); 
+    }
+
+    getpNewInnerHTML() {
+        return this.pNewInnerHTML;
     }
 }
 
