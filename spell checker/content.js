@@ -94,7 +94,9 @@ class VirtualParagraph {
 
     getRidOfPunctuation() {
         const regex = /[.,\/#!$%\^&\*;:{}=\-_`~()]/g;
+        const questionMark = /\?/g;  
         this.currentWord = this.currentWord.replace(regex, ""); 
+        this.currentWord = this.currentWord.replace(questionMark, ""); 
     }
 
     getpNewInnerHTML() {
