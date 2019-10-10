@@ -27,7 +27,7 @@ function main() {
     // Just for debugging
     for (let i = 0; i < paragraphs.length; i++) {
         content[i].check();
-        // paragraphs[i].innerHTML = content[i].getpNewInnerHTML();
+        paragraphs[i].innerHTML = content[i].getpNewInnerHTML();
     }
 }
 
@@ -90,7 +90,8 @@ class VirtualParagraph {
             if (this.pInnerText[i] === ' ' || i === this.pInnerText.length) {
                 // if result is false then the word is marked as misspelled
                 let result = this.compare(this.getRidOfPunctuation());
-                // this.addWord(this.currentWord, this.currentIndex, result);
+                // this method below handles creating the updated paragraph
+                this.addWord(result);
                 console.log("This word is now compared", this.currentWord, this.getRidOfPunctuation(), result);
                 this.currentWord = '';
             } else {
@@ -100,11 +101,19 @@ class VirtualParagraph {
         }
     }
 
+    addWord(res) {
+        const beginingTag = '<span class="highlight">';
+        const endTag = '</span>';
+        if (res) {
+            this.pNewInnerHTML += this.currentWord + " ";
+        } else {
+            this.pNewInnerHTML += beginingTag + this.currentWord + endTag + " ";
+        }
+    }
+
     compare(word) {
-        // console.log(word.length);
-        debugger;
         for (let wordDic of parsedDic) {
-            if (word == wordDic.word || word == wordDic.word.toLowerCase()) {
+            if (word == wordDic.word || word.toLowerCase() == wordDic.word) {
                 return true;
             }
         }
