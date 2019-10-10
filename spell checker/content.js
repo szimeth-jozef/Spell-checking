@@ -1,16 +1,19 @@
-/* This spell checker do not consist names. */
 
+// Global variables
 const url = chrome.runtime.getURL('./data/sk_SK.dic');
 let readyToCheck = false;
 let dict;
+let parsedDic;
 
+// Fetching data
 fetch(url)
     .then(response => response.text())
     .then(dic => dict = dic)
     .then(() => main());
 
 function main() {
-    const spell = parseDic(dict);
+    // loaded and parsed dictionary
+    parsedDic = parseDic(dict);
     
     const paragraphs = document.getElementsByTagName('p');
     let content = new Array();
@@ -40,12 +43,14 @@ function spellCheck(paragraphs, content) {
 
 
 function parseDic(data) {
+    // TODO: find out what is that fantom character but it is fixed temporarily
     let arr = [];
+    const fantomCharacter = dict[9];
 
     const buffering = new Buffer();
    
-    // We start from 7, cuz we're ignoring the first unnecessary element 
-    for (let i = 7; i < dict.length; i++) {
+    // We start from 8, cuz we're ignoring the first unnecessary element
+    for (let i = 8; i < dict.length; i++) {
         if (dict[i] === "\n") {
             arr.push({
                 "word": buffering.getWord(),
@@ -57,7 +62,10 @@ function parseDic(data) {
                 buffering.flagDetected();
                 continue;
             }
-            buffering.add(dict[i]);
+            // I had to add check for empty string like fantom character because for some reason some words have that at the end 
+            if (dict[i] !== fantomCharacter) {
+                buffering.add(dict[i]);
+            }
         }
     }
 
@@ -78,12 +86,12 @@ class VirtualParagraph {
     }
 
     check() {
-        for (let i = 0; i < this.pInnerText.length; i++) {
-            if (this.pInnerText[i] === ' ') {
-                this.getRidOfPunctuation();
-                //let result = this.compare(this.currentWord);
+        for (let i = 0; i <= this.pInnerText.length; i++) {
+            if (this.pInnerText[i] === ' ' || i === this.pInnerText.length) {
+                // if result is false then the word is marked as misspelled
+                let result = this.compare(this.getRidOfPunctuation());
                 // this.addWord(this.currentWord, this.currentIndex, result);
-                console.log("This word is now compared", this.currentWord);
+                console.log("This word is now compared", this.currentWord, this.getRidOfPunctuation(), result);
                 this.currentWord = '';
             } else {
                 this.currentWord += this.pInnerText[i];
@@ -92,11 +100,24 @@ class VirtualParagraph {
         }
     }
 
+    compare(word) {
+        // console.log(word.length);
+        debugger;
+        for (let wordDic of parsedDic) {
+            if (word == wordDic.word || word == wordDic.word.toLowerCase()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     getRidOfPunctuation() {
+        // TODO: clean up the double replace and question mark problem
         const regex = /[.,\/#!$%\^&\*;:{}=\-_`~()]/g;
         const questionMark = /\?/g;  
-        this.currentWord = this.currentWord.replace(regex, ""); 
-        this.currentWord = this.currentWord.replace(questionMark, ""); 
+        let word = this.currentWord.replace(regex, ""); 
+        word = word.replace(questionMark, "");
+        return word; 
     }
 
     getpNewInnerHTML() {
