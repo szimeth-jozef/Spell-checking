@@ -1,0 +1,9 @@
+js doc doplnit - DONE
+preist celu stranku 
+tlacitko nesmie byt pouzitelne kym sa nenacitalo vsetko get rid of readyToCheck variable
+regex rozdelovanie slov v paragrafe
+
+
+
+iny slovnik
+uzivatelske slova flagnut

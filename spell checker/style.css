@@ -8,7 +8,7 @@
 }
 
 .highlight:before {
-    content: "~~~~~~~~~~~~";
+    content: "~~~~~~~~~~~~~~~~~~~~~~";
     font-size: 0.6em;
     font-weight: 700;
     font-family: Times New Roman, Serif;

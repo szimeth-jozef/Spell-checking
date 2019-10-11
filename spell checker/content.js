@@ -1,21 +1,28 @@
-
 // Global variables
 const url = chrome.runtime.getURL('./data/sk_SK.dic');
 let readyToCheck = false;
-let dict;
+
+/**
+ * @description Global variable to hold parsed dictionary
+ */
 let parsedDic;
 
 // Fetching data
 fetch(url)
     .then(response => response.text())
-    .then(dic => dict = dic)
-    .then(() => main());
+    .then(dict => main(dict));
 
-function main() {
-    // loaded and parsed dictionary
-    parsedDic = parseDic(dict);
+/**
+ * @description - Main function, enter point of spell checking
+ * @param {string} dictionary - Raw form of the loaded dictionary
+ */
+function main(dictionary) {
+
+    parsedDic = parseDic(dictionary);
     
     const paragraphs = document.getElementsByTagName('p');
+
+    // TODO: make object with key equel to word
     let content = new Array();
     for (let p of paragraphs) {
         content.push(new VirtualParagraph(p));
@@ -27,44 +34,52 @@ function main() {
     // Just for debugging
     for (let i = 0; i < paragraphs.length; i++) {
         content[i].check();
-        paragraphs[i].innerHTML = content[i].getpNewInnerHTML();
+        paragraphs[i].innerHTML = content[i].getNewInnerHTML();
     }
 }
 
-function spellCheck(paragraphs, content) {
-    /* This function will be triggered by the button up in corner of the browser from background script */
+/**
+ * @description - This function is triggered by the button up in corner of the browser from background script
+ * @param {number} paragraphsLen - Length of paragraphs array
+ * @param {Array<VirtualParagraph>} content - Array of VirtualParagraph objects
+ */
+function spellCheck(paragraphsLen, content) {
     if (readyToCheck){
-        for (let i = 0; i < paragraphs.length; i++) {
+        for (let i = 0; i < paragraphsLen; i++) {
             content[i].check();
-            paragraphs[i].innerHTML = content[i].getpNewInnerHTML();
+            paragraphs[i].innerHTML = content[i].getNewInnerHTML();
         }
     }
 }
 
-
+/**
+ * @description - Parses raw dictionary into objects with word and flag members
+ * @param {string} data -  Raw form of the loaded dictionary 
+ * @returns {Array<object>} - Array of objects with word and flag init 
+ */
 function parseDic(data) {
     // TODO: find out what is that fantom character but it is fixed temporarily
     let arr = [];
-    const fantomCharacter = dict[9];
+    const fantomCharacter = data[9];
 
-    const buffering = new Buffer();
+    const buffering = new DictionaryBuffer();
    
     // We start from 8, cuz we're ignoring the first unnecessary element
-    for (let i = 8; i < dict.length; i++) {
-        if (dict[i] === "\n") {
+    for (let i = 8; i < data.length; i++) {
+        if (data[i] === "\n") {
             arr.push({
                 "word": buffering.getWord(),
                 "flag": buffering.getFlag()
             });
             buffering.clear();
         } else {
-            if (dict[i] === "/") {
+            if (data[i] === "/") {
                 buffering.flagDetected();
                 continue;
             }
             // I had to add check for empty string like fantom character because for some reason some words have that at the end 
-            if (dict[i] !== fantomCharacter) {
-                buffering.add(dict[i]);
+            if (data[i] !== fantomCharacter) {
+                buffering.add(data[i]);
             }
         }
     }
@@ -72,20 +87,33 @@ function parseDic(data) {
     return arr;
 }
 
+/**
+ * @class
+ * @description - VirtualParagraph gets innerText of one of the paragraphs then from innerText it detects words 
+    and right after a word is detected it is compared with words in the dictionary. If a word is not matching, it
+    is probably misspelled so the word gets wrapped around span tags and it's added to newInnerHTML. The words are
+    added to newInnerHTML whether it's correct or misspelled otherwise the updated innerHTML of a paragraph
+    would be incomplete
+ */
 class VirtualParagraph {
-    /* VirtualParagraph gets innerText of one of the paragraphs then from innerText it detects words 
-    and right after a word is detected it is compared with words in the dictionary.If a word is not matching, it
-    is probably misspelled so the word gets wrapped in span tags and it's added to pNewInnerHTML. The word are
-    added to pNewInnerHTML whether it's correct or misspelled otherwise the updated innerHTML of a paraghraph
-    would be incomplete */
+
+    /**
+     * 
+     * @param {HTMLParagraphElement} paragraph - Raw HTML paragraph element
+     */
     constructor(paragraph)  {
         this.pInnerText = paragraph.innerText;
-        this.currentIndex = 0;
         this.currentWord = '';
-        this.pNewInnerHTML = '';
+        this.newInnerHTML = '';
+        this.highlightTagBegin = '<span class="highlight">';
+        this.highlightTagEnd = '</span>';
     }
 
+    /**
+     * @description - Execute checking process
+     */
     check() {
+        // TODO: split text with regex and iterate through with foreach
         for (let i = 0; i <= this.pInnerText.length; i++) {
             if (this.pInnerText[i] === ' ' || i === this.pInnerText.length) {
                 // if result is false then the word is marked as misspelled
@@ -97,21 +125,28 @@ class VirtualParagraph {
             } else {
                 this.currentWord += this.pInnerText[i];
             }
-            this.currentIndex++;
         }
     }
 
+    /**
+     * @description - Add word to newInnerHTML with or without span tags 
+     * @param {boolean} res - Boolean value, whether wrap the word or not 
+     */
     addWord(res) {
-        const beginingTag = '<span class="highlight">';
-        const endTag = '</span>';
         if (res) {
-            this.pNewInnerHTML += this.currentWord + " ";
+            this.newInnerHTML += this.currentWord + " ";
         } else {
-            this.pNewInnerHTML += beginingTag + this.currentWord + endTag + " ";
+            this.newInnerHTML += this.highlightTagBegin + this.currentWord + this.highlightTagEnd + " ";
         }
     }
 
+    /**
+     * 
+     * @param {string} word - Word which is going to be tested
+     * @returns {boolean} - Depend on whether the passed word was found or not
+     */
     compare(word) {
+        // TODO: prerobit s indexOf
         for (let wordDic of parsedDic) {
             if (word == wordDic.word || word.toLowerCase() == wordDic.word) {
                 return true;
@@ -120,6 +155,10 @@ class VirtualParagraph {
         return false;
     }
 
+    /**
+     * @description - Takes the current word and returns it without punctuation
+     * @returns {string} - Returns this.currentWord without punctuation
+     */
     getRidOfPunctuation() {
         // TODO: clean up the double replace and question mark problem
         const regex = /[.,\/#!$%\^&\*;:{}=\-_`~()]/g;
@@ -129,18 +168,27 @@ class VirtualParagraph {
         return word; 
     }
 
-    getpNewInnerHTML() {
-        return this.pNewInnerHTML;
+    getNewInnerHTML() {
+        return this.newInnerHTML;
     }
 }
 
-class Buffer {
+/**
+ * @class
+ * @description - Simple buffering system which accumulates letters and separates words from flags
+ */
+class DictionaryBuffer {
+
     constructor() {
         this.wordBuffer = "";
         this.flagBuffer = "";
         this.flagActive = false;
     }
 
+    /**
+     * @description - Add letter to buffer based on whether a flag is detected or not
+     * @param {string} token - Letter to add to buffer
+     */
     add(token) {
         if (!this.flagActive) {
             this.wordBuffer += token;
@@ -149,10 +197,16 @@ class Buffer {
         }
     }
 
+    /**
+     * @description - Enable flagActive mode inside of DictionaryBuffer
+     */
     flagDetected() {
         this.flagActive = true;
     }
 
+    /**
+     * @description - Reset state of buffer
+     */
     clear() {
         this.wordBuffer = "";
         this.flagBuffer = "";
