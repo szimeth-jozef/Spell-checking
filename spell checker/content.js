@@ -21,6 +21,7 @@ function main(dictionary) {
     parsedDic = parseDic(dictionary);
     
     const paragraphs = document.getElementsByTagName('p');
+    console.info(document.querySelectorAll("body *"));
 
     // TODO: make object with key equel to word
     let content = new Array();
