@@ -8,6 +8,10 @@
         "data/info.json",
         "data/sk_SK.dic"
     ],
+    "browser_action": {
+        "default_popup": "background/background.html",
+        "default_title": "Spell checker"
+    },
     "content_scripts": [
         {
         "matches": [
