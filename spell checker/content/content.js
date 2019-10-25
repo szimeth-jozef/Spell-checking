@@ -24,7 +24,6 @@ function main(dictionary) {
     // const paragraphs = document.getElementsByTagName('p');
     const body = document.querySelectorAll('body *');
     const filteredElements = tagFilter(body);
-    console.log(filteredElements);
 
     // TODO: make object with key equel to word
     let content = new Array();
@@ -140,14 +139,14 @@ class VirtualElement {
 
     testCheck() {
         this.childNodes.forEach((node) => {
-            // TODO: regex to trim
-            if (node.nodeType === Node.TEXT_NODE && !/^\s*$/.test(node.nodeValue)) {
-                // console.log("We found text and it is:");
-                // console.log(node);
-                // console.log(node.parentNode.innerHTML);
+            if (node.nodeType === Node.TEXT_NODE && node.nodeValue.trim().length !== 0) {
+                console.log("We found text and it is:");
+                console.log(node);
+                console.log(node.parentNode.innerHTML);
 
                 const words = node.nodeValue.split(/\s+/g);
                 words.forEach((word) => {
+                    // TODO: check whether the string is not empty
                     // if result is false then the word is marked as misspelled
                     let result = this.compare(this.getRidOfPunctuation(word));
                     // this method below handles creating the updated paragraph

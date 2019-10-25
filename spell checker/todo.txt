@@ -1,7 +1,7 @@
 js doc doplnit - DONE
-preist celu stranku 
+preist celu stranku - DONE
 tlacitko nesmie byt pouzitelne kym sa nenacitalo vsetko get rid of readyToCheck variable
-regex rozdelovanie slov v paragrafe
+regex rozdelovanie slov v paragrafe - DONE
 nastavitelna farba
 
 

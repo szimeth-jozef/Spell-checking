@@ -16,8 +16,12 @@
             "file:///C:/Users/szimeth/Desktop/GitHub/Spell-checking/spell%20checker/test-page.html",
             "file:///E:/Dokumentumok/GitHub/Spell-checking/spell%20checker/test-page.html"
         ],
-        "css": [ "style.css" ],
-        "js": ["content.js"]
+        "css": [ "content/style.css" ],
+        "js": ["content/content.js"]
         }
-    ]
+    ],
+    "background": {
+        "page": "background/background.html",
+        "persistent": false
+    }
 }
