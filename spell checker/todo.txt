@@ -2,8 +2,10 @@ js doc doplnit - DONE
 preist celu stranku 
 tlacitko nesmie byt pouzitelne kym sa nenacitalo vsetko get rid of readyToCheck variable
 regex rozdelovanie slov v paragrafe
+nastavitelna farba
 
 
 
 iny slovnik
 uzivatelske slova flagnut
+color picker for highlighting

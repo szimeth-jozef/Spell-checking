@@ -1,5 +1,6 @@
 // Global variables
 const url = chrome.runtime.getURL('./data/sk_SK.dic');
+const blackListTags = ['SCRIPT', 'NOSCRIPT', 'LINK', 'IMG'];
 let readyToCheck = false;
 
 /**
@@ -20,29 +21,30 @@ function main(dictionary) {
 
     parsedDic = parseDic(dictionary);
     
-    const paragraphs = document.getElementsByTagName('p');
-    console.info(document.querySelectorAll("body *"));
+    // const paragraphs = document.getElementsByTagName('p');
+    const body = document.querySelectorAll('body *');
+    const filteredElements = tagFilter(body);
+    console.log(filteredElements);
 
     // TODO: make object with key equel to word
     let content = new Array();
-    for (let p of paragraphs) {
-        content.push(new VirtualParagraph(p));
+    for (let element of filteredElements) {
+        content.push(new VirtualElement(element));
     }
-
-    readyToCheck = true;
+    // readyToCheck = true;
 
 
     // Just for debugging
-    for (let i = 0; i < paragraphs.length; i++) {
-        content[i].check();
-        paragraphs[i].innerHTML = content[i].getNewInnerHTML();
+    for (let i = 0; i < content.length; i++) {
+        content[i].testCheck();
+        // filteredElements[i].innerHTML = content[i].getNewInnerHTML();
     }
 }
 
 /**
  * @description - This function is triggered by the button up in corner of the browser from background script
  * @param {number} paragraphsLen - Length of paragraphs array
- * @param {Array<VirtualParagraph>} content - Array of VirtualParagraph objects
+ * @param {Array<VirtualElement>} content - Array of VirtualElement objects
  */
 function spellCheck(paragraphsLen, content) {
     if (readyToCheck){
@@ -84,60 +86,92 @@ function parseDic(data) {
             }
         }
     }
-
     return arr;
 }
 
 /**
+ * @description - basicaly filter out every node that do not has any text contentet 
+ * @param {NodeList} tags - array of nodes
+ * @returns {NodeList} - filtered nodes list
+ */
+function tagFilter(tags) {
+    let newTags = new Array();
+
+    for (const node of tags) {
+        // TODO: check text node 
+        if (blackListTags.includes(node.tagName)) {
+            continue;
+        }
+        // Problem with this is as soon the string is a single character and it is a foreign letter 
+        // for example č, it wont pass, but for now I leave it this way because there is just a small amout of chance to this occurance
+        // TODO: find a solution to the problem described above
+        else if (!/[a-zA-Z]/.test(node.innerText)) {
+            continue;
+        }
+        else {
+            newTags.push(node);
+        }
+    }
+    return newTags;
+}
+
+/**
  * @class
- * @description - VirtualParagraph gets innerText of one of the paragraphs then from innerText it detects words 
+ * @description - (deprecated, need to be updated) VirtualElement gets innerText of one of the elements then from innerText it detects words 
     and right after a word is detected it is compared with words in the dictionary. If a word is not matching, it
     is probably misspelled so the word gets wrapped around span tags and it's added to newInnerHTML. The words are
     added to newInnerHTML whether it's correct or misspelled otherwise the updated innerHTML of a paragraph
     would be incomplete
  */
-class VirtualParagraph {
+class VirtualElement {
 
     /**
-     * 
-     * @param {HTMLParagraphElement} paragraph - Raw HTML paragraph element
+     * @param {HTMLElement} element - Raw HTML element
      */
-    constructor(paragraph)  {
-        this.pInnerText = paragraph.innerText;
+    constructor(element)  {
+        this.node = element;
+        this.childNodes = element.childNodes;
+        this.eInnerHTML = element.innerHTML;
         this.currentWord = '';
         this.newInnerHTML = '';
-        this.highlightTagBegin = '<span class="highlight">';
-        this.highlightTagEnd = '</span>';
+        this.insideTagMode = false;
+        this.highlighting = ['<span class="highlight">', '</span>'];
     }
 
-    /**
-     * @description - Execute checking process
-     */
-    check() {
-        // TODO: split text with regex and iterate through with foreach
-        for (let i = 0; i <= this.pInnerText.length; i++) {
-            if (this.pInnerText[i] === ' ' || i === this.pInnerText.length) {
-                // if result is false then the word is marked as misspelled
-                let result = this.compare(this.getRidOfPunctuation());
-                // this method below handles creating the updated paragraph
-                this.addWord(result);
-                console.log("This word is now compared", this.currentWord, this.getRidOfPunctuation(), result);
-                this.currentWord = '';
-            } else {
-                this.currentWord += this.pInnerText[i];
+    testCheck() {
+        this.childNodes.forEach((node) => {
+            // TODO: regex to trim
+            if (node.nodeType === Node.TEXT_NODE && !/^\s*$/.test(node.nodeValue)) {
+                // console.log("We found text and it is:");
+                // console.log(node);
+                // console.log(node.parentNode.innerHTML);
+
+                const words = node.nodeValue.split(/\s+/g);
+                words.forEach((word) => {
+                    // if result is false then the word is marked as misspelled
+                    let result = this.compare(this.getRidOfPunctuation(word));
+                    // this method below handles creating the updated paragraph
+                    this.addWord(result, word);
+                });
+                this.applyChanges(node);
             }
-        }
+        });
+    }
+
+    applyChanges(node) {
+        node.parentNode.innerHTML = this.newInnerHTML;
+        this.newInnerHTML = '';
     }
 
     /**
      * @description - Add word to newInnerHTML with or without span tags 
      * @param {boolean} res - Boolean value, whether wrap the word or not 
      */
-    addWord(res) {
+    addWord(res, word) {
         if (res) {
-            this.newInnerHTML += this.currentWord + " ";
+            this.newInnerHTML += word + " ";
         } else {
-            this.newInnerHTML += this.highlightTagBegin + this.currentWord + this.highlightTagEnd + " ";
+            this.newInnerHTML += this.highlighting[0] + word + this.highlighting[1] + " ";
         }
     }
 
@@ -160,13 +194,13 @@ class VirtualParagraph {
      * @description - Takes the current word and returns it without punctuation
      * @returns {string} - Returns this.currentWord without punctuation
      */
-    getRidOfPunctuation() {
+    getRidOfPunctuation(word) {
         // TODO: clean up the double replace and question mark problem
         const regex = /[.,\/#!$%\^&\*;:{}=\-_`~()]/g;
         const questionMark = /\?/g;  
-        let word = this.currentWord.replace(regex, ""); 
-        word = word.replace(questionMark, "");
-        return word; 
+        let clsWord = word.replace(regex, ""); 
+        clsWord = clsWord.replace(questionMark, "");
+        return clsWord; 
     }
 
     getNewInnerHTML() {

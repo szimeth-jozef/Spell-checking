@@ -5,6 +5,7 @@
 .highlight {
     display: inline-block;
     position: relative;
+    background: yellow;
 }
 
 .highlight:before {
