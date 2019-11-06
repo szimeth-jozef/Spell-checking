@@ -33,7 +33,6 @@ function onload(dictionary) {
         content.push(new VirtualElement(element));
     }
 
-    //TODO: At this point send message to background to enable the button
     chrome.runtime.sendMessage("enable");
 
 
@@ -58,7 +57,8 @@ function spellCheck() {
 function parseDic(data) {
     // TODO: make object with key equel to word
     // TODO: find out what is that fantom character but it is fixed temporarily
-    let arr = [];
+    // let arr = [];
+    const dictionary = {};
     const fantomCharacter = data[9];
 
     const buffering = new DictionaryBuffer();
@@ -66,10 +66,11 @@ function parseDic(data) {
     // We start from 8, cuz we're ignoring the first unnecessary element
     for (let i = 8; i < data.length; i++) {
         if (data[i] === "\n") {
-            arr.push({
-                "word": buffering.getWord(),
-                "flag": buffering.getFlag()
-            });
+            // arr.push({
+            //     "word": buffering.getWord(),
+            //     "flag": buffering.getFlag()
+            // });
+            dictionary[buffering.getWord()] = buffering.getFlag();
             buffering.clear();
         } else {
             if (data[i] === "/") {
@@ -82,7 +83,8 @@ function parseDic(data) {
             }
         }
     }
-    return arr;
+    // return arr;
+    return dictionary;
 }
 
 /**
@@ -127,11 +129,9 @@ class VirtualElement {
     constructor(element)  {
         this.node = element;
         this.childNodes = element.childNodes;
-        this.eInnerHTML = element.innerHTML;
-        this.currentWord = '';
+        this.eInnerHTML = element.innerHTML; // Not used
         this.newInnerHTML = '';
-        this.insideTagMode = false;
-        this.highlighting = ['<span class="highlight">', '</span>'];
+        this.highlighting = ['<span class="misspell-highlight-SCH-Extension">', '</span>'];
     }
 
     testCheck() {
@@ -177,13 +177,17 @@ class VirtualElement {
      * @returns {boolean} - Depend on whether the passed word was found or not
      */
     compare(word) {
-        // TODO: prerobit s indexOf
-        for (let wordDic of parsedDic) {
-            if (word == wordDic.word || word.toLowerCase() == wordDic.word) {
-                return true;
-            }
+        if (word in parsedDic || word.toLowerCase() in parsedDic) {
+            return true;
         }
         return false;
+
+        // for (let wordDic of parsedDic) {
+        //     if (word == wordDic.word || word.toLowerCase() == wordDic.word) {
+        //         return true;
+        //     }
+        // }
+        // return false;
     }
 
     /**
@@ -249,6 +253,6 @@ class DictionaryBuffer {
     }
 
     getFlag() {
-        return this.flagBuffer;
+        return (this.flagBuffer == "") ? null : this.flagBuffer;
     }
 }

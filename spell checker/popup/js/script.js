@@ -1,6 +1,8 @@
 window.onload = () => {
 
-
+    /**
+     * @description - Here's a listener attached to button in the popup which is sending request to content script to run the spell check
+     */
     document.getElementById('run').addEventListener("click", () => {
  
         const params = {
