@@ -1,56 +1,52 @@
 // Global variables
 const url = chrome.runtime.getURL('./data/sk_SK.dic');
 const blackListTags = ['SCRIPT', 'NOSCRIPT', 'LINK', 'IMG'];
-let readyToCheck = false;
-
-/**
- * @description Global variable to hold parsed dictionary
- */
 let parsedDic;
+let content = [];
 
 // Fetching data
 fetch(url)
     .then(response => response.text())
-    .then(dict => main(dict));
+    .then(dict => onload(dict));
 
 /**
- * @description - Main function, enter point of spell checking
+ * @description - This is an event listener which is waiting for messages from the popup button to 
+ *                run spell checking
+ */
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    spellCheck();
+});
+
+
+/**
+ * @description - Enter point of the program, where the dictionaty is loaded and enabled the popup button
  * @param {string} dictionary - Raw form of the loaded dictionary
  */
-function main(dictionary) {
+function onload(dictionary) {
 
     parsedDic = parseDic(dictionary);
     
-    // const paragraphs = document.getElementsByTagName('p');
     const body = document.querySelectorAll('body *');
     const filteredElements = tagFilter(body);
 
-    // TODO: make object with key equel to word
-    let content = new Array();
     for (let element of filteredElements) {
         content.push(new VirtualElement(element));
     }
-    // readyToCheck = true;
+
+    //TODO: At this point send message to background to enable the button
+    chrome.runtime.sendMessage("enable");
 
 
     // Just for debugging
-    for (let i = 0; i < content.length; i++) {
-        content[i].testCheck();
-        // filteredElements[i].innerHTML = content[i].getNewInnerHTML();
-    }
+    // spellCheck();
 }
 
 /**
- * @description - This function is triggered by the button up in corner of the browser from background script
- * @param {number} paragraphsLen - Length of paragraphs array
- * @param {Array<VirtualElement>} content - Array of VirtualElement objects
+ * @description - This function is triggered by the button up in corner of the browser from popup
  */
-function spellCheck(paragraphsLen, content) {
-    if (readyToCheck){
-        for (let i = 0; i < paragraphsLen; i++) {
-            content[i].check();
-            paragraphs[i].innerHTML = content[i].getNewInnerHTML();
-        }
+function spellCheck() {
+    for (let i = 0; i < content.length; i++) {
+        content[i].testCheck();
     }
 }
 
@@ -60,6 +56,7 @@ function spellCheck(paragraphsLen, content) {
  * @returns {Array<object>} - Array of objects with word and flag init 
  */
 function parseDic(data) {
+    // TODO: make object with key equel to word
     // TODO: find out what is that fantom character but it is fixed temporarily
     let arr = [];
     const fantomCharacter = data[9];

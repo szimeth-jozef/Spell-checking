@@ -9,7 +9,7 @@
         "data/sk_SK.dic"
     ],
     "browser_action": {
-        "default_popup": "background/background.html",
+        "default_popup": "popup/index.html",
         "default_title": "Spell checker"
     },
     "content_scripts": [
@@ -25,7 +25,7 @@
         }
     ],
     "background": {
-        "page": "background/background.html",
-        "persistent": false
-    }
+        "scripts": ["background/background.js"]
+    },
+    "permissions": ["tabs"]
 }
