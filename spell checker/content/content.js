@@ -1,6 +1,6 @@
 // Global variables
 const url = chrome.runtime.getURL('./data/sk_SK.dic');
-const blackListTags = ['SCRIPT', 'NOSCRIPT', 'LINK', 'IMG'];
+const blackListTags = ['SCRIPT', 'NOSCRIPT', 'LINK', 'IMG', 'STYLE'];
 let parsedDic;
 let content = [];
 
