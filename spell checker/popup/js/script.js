@@ -14,9 +14,9 @@ window.onload = () => {
         };
         chrome.tabs.query(params, (tabs) => {
 
-            // I made an object because later maybe it'll be useful
             const request = {
-                text: "Do something"
+                text: "Do something",
+                HlState: null
             };
        
             // I am using sendMessage instead of sendRequest because sendRequest is deprecated according to googles documentation.
@@ -53,6 +53,10 @@ window.onload = () => {
 
 function highlightRequest(state) {
     chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
-        chrome.tabs.sendMessage(tabs[0].id, {state: state});
+        const request = {
+            text: null,
+            HlState: state
+        };
+        chrome.tabs.sendMessage(tabs[0].id, request);
     });
 }

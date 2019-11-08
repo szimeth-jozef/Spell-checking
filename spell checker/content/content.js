@@ -2,7 +2,7 @@
 const url = chrome.runtime.getURL('./data/sk_SK.dic');
 const blackListTags = ['SCRIPT', 'NOSCRIPT', 'LINK', 'IMG', 'STYLE'];
 let parsedDic;
-let content = [];
+let VirtualElementHolder = [];
 
 // Fetching data
 fetch(url)
@@ -11,10 +11,15 @@ fetch(url)
 
 /**
  * @description - This is an event listener which is waiting for messages from the popup button to 
- *                run spell checking
+ *                run spell checking or turn off/on highlights
  */
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    spellCheck();
+    if (request.text) {
+        spellCheck();
+    }
+    if (request.HlState !== null) {
+        turnHighlight(request.HlState);
+    }
 });
 
 
@@ -27,37 +32,39 @@ function onload(dictionary) {
     parsedDic = parseDic(dictionary);
     
     const body = document.querySelectorAll('body *');
+
     const filteredElements = tagFilter(body);
+    console.log(filteredElements);
+    const node1 = filteredElements[0].childNodes[0];
+    const node2 = filteredElements[0].childNodes[2];
+    console.log(node1.isSameNode(node2));
+    console.log(node1.isSameNode(node1));
+    debugger
 
     for (let element of filteredElements) {
-        content.push(new VirtualElement(element));
+        VirtualElementHolder.push(new VirtualElement(element));
     }
 
+    // After everything is loaded, the dictionary, elements and other stuff we can enable the button
     chrome.runtime.sendMessage("enable");
-
-
-    // Just for debugging
-    // spellCheck();
 }
 
 /**
- * @description - This function is triggered by the button up in corner of the browser from popup
+ * @description - This function is triggered by the button up in corner of the browser from popup and it executes spell checking
  */
 function spellCheck() {
-    for (let i = 0; i < content.length; i++) {
-        content[i].testCheck();
+    for (let i = 0; i < VirtualElementHolder.length; i++) {
+        VirtualElementHolder[i].check();
     }
 }
 
 /**
- * @description - Parses raw dictionary into objects with word and flag members
+ * @description - Parses raw dictionary into objects with word as key and value with flags of the word or null if it doesn't have flags
  * @param {string} data -  Raw form of the loaded dictionary 
- * @returns {Array<object>} - Array of objects with word and flag init 
+ * @returns {Object} - Object of word as key 
  */
 function parseDic(data) {
-    // TODO: make object with key equel to word
     // TODO: find out what is that fantom character but it is fixed temporarily
-    // let arr = [];
     const dictionary = {};
     const fantomCharacter = data[9];
 
@@ -66,10 +73,6 @@ function parseDic(data) {
     // We start from 8, cuz we're ignoring the first unnecessary element
     for (let i = 8; i < data.length; i++) {
         if (data[i] === "\n") {
-            // arr.push({
-            //     "word": buffering.getWord(),
-            //     "flag": buffering.getFlag()
-            // });
             dictionary[buffering.getWord()] = buffering.getFlag();
             buffering.clear();
         } else {
@@ -83,7 +86,6 @@ function parseDic(data) {
             }
         }
     }
-    // return arr;
     return dictionary;
 }
 
@@ -103,14 +105,32 @@ function tagFilter(tags) {
         // Problem with this is as soon the string is a single character and it is a foreign letter 
         // for example č, it wont pass, but for now I leave it this way because there is just a small amout of chance to this occurance
         // TODO: find a solution to the problem described above
-        else if (!/[a-zA-Z]/.test(node.innerText)) {
-            continue;
-        }
+        // else if (!/[a-zA-Z]/.test(node.innerText)) {
+        //     continue;
+        // }
         else {
             newTags.push(node);
         }
     }
     return newTags;
+}
+
+/**
+ * @description - Function to turn misspeling highlight on or off
+ * @param {boolean} state - Decide whether highlighting should be turned off or on
+ */
+function turnHighlight(state) {
+    if (state) {
+        const spans = document.getElementsByClassName('emptyClassHolder');
+        for (let i = spans.length - 1; i >= 0; i--) {
+            spans[i].className = 'misspell-highlight-SCH-Extension';
+        }
+    } else {
+        const spans = document.getElementsByClassName('misspell-highlight-SCH-Extension');
+        for (let i = spans.length - 1; i >= 0; i--) {
+            spans[i].className = 'emptyClassHolder';
+        }
+    }
 }
 
 /**
@@ -134,21 +154,26 @@ class VirtualElement {
         this.highlighting = ['<span class="misspell-highlight-SCH-Extension">', '</span>'];
     }
 
-    testCheck() {
+    check() {
         this.childNodes.forEach((node) => {
+            // Ez itt nem tetszik neki, szoval refactor
             if (node.nodeType === Node.TEXT_NODE && node.nodeValue.trim().length !== 0) {
-                console.log("We found text and it is:");
                 console.log(node);
                 console.log(node.parentNode.innerHTML);
+                console.log("----------------------");
 
                 const words = node.nodeValue.split(/\s+/g);
-                words.forEach((word) => {
-                    // TODO: check whether the string is not empty
-                    // if result is false then the word is marked as misspelled
-                    let result = this.compare(this.getRidOfPunctuation(word));
-                    // this method below handles creating the updated paragraph
-                    this.addWord(result, word);
-                });
+
+                for (let word of words) {
+                    if (word !== "") {
+                        // if result is false then the word is marked as misspelled
+                        let result = this.compare(this.getRidOfPunctuation(word));
+
+                        // this method below handles creating the updated paragraph
+                        this.addWord(result, word);
+                    }
+                }
+
                 this.applyChanges(node);
             }
         });
@@ -181,13 +206,6 @@ class VirtualElement {
             return true;
         }
         return false;
-
-        // for (let wordDic of parsedDic) {
-        //     if (word == wordDic.word || word.toLowerCase() == wordDic.word) {
-        //         return true;
-        //     }
-        // }
-        // return false;
     }
 
     /**
