@@ -18,10 +18,11 @@
             "http://*/*",
             "https://*/*",
             "file:///C:/Users/szimeth/Desktop/GitHub/Spell-checking/spell%20checker/test-page.html",
-            "file:///E:/Dokumentumok/GitHub/Spell-checking/spell%20checker/test-page.html"
+            "file:///E:/Dokumentumok/GitHub/Spell-checking/spell%20checker/test-page.html",
+            "file:///home/joco/GitHub/Spell-checking/spell%20checker/test-page.html"
         ],
         "css": [ "content/style.css" ],
-        "js": ["content/content.js"]
+        "js": ["content/content.js", "content/dictionary_buffer.js", "content/virtual_element.js"]
         }
     ],
     "background": {
