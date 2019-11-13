@@ -2,12 +2,13 @@
     background: blue;
 } */
 
-.highlight {
+.misspell-highlight-SCH-Extension {
     display: inline-block;
     position: relative;
+    background: yellow;
 }
 
-.highlight:before {
+.misspell-highlight-SCH-Extension:before {
     content: "~~~~~~~~~~~~~~~~~~~~~~";
     font-size: 0.6em;
     font-weight: 700;

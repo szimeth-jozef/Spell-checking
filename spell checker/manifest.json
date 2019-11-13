@@ -8,16 +8,25 @@
         "data/info.json",
         "data/sk_SK.dic"
     ],
+    "browser_action": {
+        "default_popup": "popup/index.html",
+        "default_title": "Spell checker"
+    },
     "content_scripts": [
         {
         "matches": [
             "http://*/*",
             "https://*/*",
             "file:///C:/Users/szimeth/Desktop/GitHub/Spell-checking/spell%20checker/test-page.html",
-            "file:///E:/Dokumentumok/GitHub/Spell-checking/spell%20checker/test-page.html"
+            "file:///E:/Dokumentumok/GitHub/Spell-checking/spell%20checker/test-page.html",
+            "file:///home/joco/GitHub/Spell-checking/spell%20checker/test-page.html"
         ],
-        "css": [ "style.css" ],
-        "js": ["content.js"]
+        "css": [ "content/style.css" ],
+        "js": ["content/content.js", "content/dictionary_buffer.js", "content/virtual_element.js"]
         }
-    ]
+    ],
+    "background": {
+        "scripts": ["background/background.js"]
+    },
+    "permissions": ["tabs"]
 }
