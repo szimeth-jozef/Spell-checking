@@ -2,7 +2,7 @@
 const url = chrome.runtime.getURL('./data/sk_SK.dic');
 const blackListTags = ['SCRIPT', 'NOSCRIPT', 'LINK', 'IMG', 'STYLE'];
 let parsedDic;
-let VirtualElementHolder = [];
+let textNodes;
 
 // Fetching data
 fetch(url)
@@ -34,13 +34,11 @@ function onload(dictionary) {
     const body = document.querySelectorAll('body *');
 
     const filteredElements = preFilter(body);
-    const textNodes = filteredElements.textNodeFilter();
-    console.log(textNodes);
+    textNodes = filteredElements.textNodeFilter();
+    // console.log(filteredElements);
     // textNodes.forEach(node => console.log(node.textContent))
 
-    for (let textNode of textNodes) {
-        VirtualElementHolder.push(new VirtualElement(textNode));
-    }
+    
 
     // After everything is loaded, the dictionary, elements and other stuff we can enable the button
     chrome.runtime.sendMessage("enable");
@@ -50,6 +48,12 @@ function onload(dictionary) {
  * @description - This function is triggered by the button up in corner of the browser from popup and it executes spell checking
  */
 function spellCheck() {
+    const VirtualElementHolder = [];
+
+    for (let textNode of textNodes) {
+        VirtualElementHolder.push(new VirtualElement(textNode));
+    }
+
     for (let i = 0; i < VirtualElementHolder.length; i++) {
         VirtualElementHolder[i].check();
     }
@@ -97,14 +101,7 @@ function preFilter(tags) {
     for (const node of tags) {
         if (blackListTags.includes(node.tagName)) {
             continue;
-        }
-        // Problem with this is as soon the string is a single character and it is a foreign letter 
-        // for example č, it wont pass, but for now I leave it this way because there is just a small amout of chance to this occurance
-        // TODO: find a solution to the problem described above
-        // else if (!/[a-zA-Z]/.test(node.innerText)) {
-        //     continue;
-        // }
-        else {
+        } else {
             newTags.push(node);
         }
     }
@@ -144,7 +141,6 @@ function addNode(node, nodeArray) {
     nodeArray.push(node);
     return nodeArray;
 }
-
 
 
 /**

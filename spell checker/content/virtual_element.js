@@ -15,12 +15,9 @@ class VirtualElement {
         this.node = textNode;
         this.motherNode = null;
         this.textNodeCache = [];
-        // this.newInnerHTML = '';
-        // this.highlighting = ['<span class="misspell-highlight-SCH-Extension">', '</span>'];
     }
 
     check() {
-        debugger
         const words = this.node.textContent.split(/\s+/g);
         if (words.length > 1) {
 
@@ -45,7 +42,6 @@ class VirtualElement {
             // Clear the cache in case any of the words wasn't misspelled
             this.textNodeCache = [];
             // Finally replace old textNode with our motherNode only if motherNode is not null
-            // document.replaceChild(this.motherNode, this.node);
             if (this.motherNode) {
                 this.node.replaceWith(this.motherNode);
             }
@@ -56,7 +52,6 @@ class VirtualElement {
                 wrapTag.setAttribute('class', 'misspell-highlight-SCH-Extension');
                 wrapTag.appendChild(document.createTextNode(words[0]));
                 // Finally replace old textNode with wrapTag
-                // document.replaceChild(wrapTag, this.node);
                 this.node.replaceWith(wrapTag);
             }
         }
@@ -75,25 +70,6 @@ class VirtualElement {
                 }
                 this.textNodeCache = [];
             }
-        }
-    }
-
-
-    /**
-     * @description - This method wraps the given word in span tag with a specific class based on res and 
-     * returns it, but if res is true then it returns null which mean theres nothing to do  
-     * @param {boolean} res - Boolean value, whether the passed word is going to be wrapped or not 
-     * @param {string} word - Word which is going to be wrapped
-     */
-    createWrapper(res, word) {
-        if (res) {
-            return null;
-        } else {
-            const wrapTag = document.createElement('span');
-            wrapTag.setAttribute('class', 'misspell-highlight-SCH-Extension');
-            const text = document.createTextNode(word);
-            wrapTag.appendChild(text);
-            return wrapTag;
         }
     }
 

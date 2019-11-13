@@ -1,8 +1,9 @@
-/* .highlight {
-    background: blue;
-} */
-
 .misspell-highlight-SCH-Extension {
+    background: blue;
+    color: white !important;
+}
+
+/* .misspell-highlight-SCH-Extension {
     display: inline-block;
     position: relative;
     background: yellow;
@@ -19,4 +20,4 @@
     top: 12px;
     left: -1px;
     overflow: hidden;
-}
+} */
