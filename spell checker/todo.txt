@@ -3,7 +3,7 @@ preist celu stranku - DONE
 tlacitko nesmie byt pouzitelne kym sa nenacitalo vsetko - DONE
 regex rozdelovanie slov v paragrafe - DONE
 nastavitelna farba
-pri dalsej kontrole miznu elementy(find out why)
+pri dalsej kontrole miznu elementy(find out why) - DONE
 
 
 

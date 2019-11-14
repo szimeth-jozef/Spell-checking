@@ -1,6 +1,7 @@
 // Global variables
 const url = chrome.runtime.getURL('./data/sk_SK.dic');
 const blackListTags = ['SCRIPT', 'NOSCRIPT', 'LINK', 'IMG', 'STYLE'];
+let currentHighlightColor = 'yellow';
 let parsedDic;
 let textNodes;
 
@@ -19,6 +20,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     }
     if (request.HlState !== null) {
         turnHighlight(request.HlState);
+    }
+    if (request.color !== null) {
+        changeHighlightColorTo(request.color);
     }
 });
 
@@ -151,12 +155,22 @@ function turnHighlight(state) {
     if (state) {
         const spans = document.getElementsByClassName('emptyClassHolder');
         for (let i = spans.length - 1; i >= 0; i--) {
-            spans[i].className = 'misspell-highlight-SCH-Extension';
+            spans[i].className = 'misspell-highlight-SCH-Extension-' + currentHighlightColor;
         }
     } else {
-        const spans = document.getElementsByClassName('misspell-highlight-SCH-Extension');
+        const spans = document.getElementsByClassName('misspell-highlight-SCH-Extension-' + currentHighlightColor);
         for (let i = spans.length - 1; i >= 0; i--) {
             spans[i].className = 'emptyClassHolder';
         }
+    }
+}
+
+function changeHighlightColorTo(color) {
+    if (currentHighlightColor !== color) {
+        const spans = document.getElementsByClassName('misspell-highlight-SCH-Extension-' + currentHighlightColor);
+        for (let i = spans.length - 1; i >= 0; i--) {
+            spans[i].className = 'misspell-highlight-SCH-Extension-' + color;
+        }
+        currentHighlightColor = color;
     }
 }

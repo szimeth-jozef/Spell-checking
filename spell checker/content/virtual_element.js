@@ -17,6 +17,9 @@ class VirtualElement {
         this.textNodeCache = [];
     }
 
+    /**
+     * @description - Main method of VirtualElemet class, it executes the checking procedure
+     */
     check() {
         const words = this.node.textContent.split(/\s+/g);
         if (words.length > 1) {
@@ -33,7 +36,7 @@ class VirtualElement {
                 }
                 else {
                     const wrapTag = document.createElement('span');
-                    wrapTag.setAttribute('class', 'misspell-highlight-SCH-Extension');
+                    wrapTag.setAttribute('class', 'misspell-highlight-SCH-Extension-yellow');
                     wrapTag.appendChild(document.createTextNode(word + " "));
                     this.motherNode.appendChild(wrapTag);
                 }
@@ -49,7 +52,7 @@ class VirtualElement {
             const result = this.compare(this.getRidOfPunctuation(words[0]));
             if (!result) {
                 const wrapTag = document.createElement('span');
-                wrapTag.setAttribute('class', 'misspell-highlight-SCH-Extension');
+                wrapTag.setAttribute('class', 'misspell-highlight-SCH-Extension-yellow');
                 wrapTag.appendChild(document.createTextNode(words[0]));
                 // Finally replace old textNode with wrapTag
                 this.node.replaceWith(wrapTag);

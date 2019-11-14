@@ -1,6 +1,29 @@
-.misspell-highlight-SCH-Extension {
+.misspell-highlight-SCH-Extension-yellow {
+    background: yellow;
+    color: black !important;
+    text-decoration: underline;
+    text-decoration-color: red;
+}
+
+.misspell-highlight-SCH-Extension-blue {
     background: blue;
     color: white !important;
+    text-decoration: underline;
+    text-decoration-color: red;
+}
+
+.misspell-highlight-SCH-Extension-red {
+    background: red;
+    color: white !important;
+    text-decoration: underline;
+    text-decoration-color: red;
+}
+
+.misspell-highlight-SCH-Extension-white {
+    background: white;
+    color: black !important;
+    text-decoration: underline;
+    text-decoration-color: red;
 }
 
 /* .misspell-highlight-SCH-Extension {
