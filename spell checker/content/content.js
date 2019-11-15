@@ -2,6 +2,7 @@
 const url = chrome.runtime.getURL('./data/sk_SK.dic');
 const blackListTags = ['SCRIPT', 'NOSCRIPT', 'LINK', 'IMG', 'STYLE'];
 let currentHighlightColor = 'yellow';
+let switchState;
 let parsedDic;
 let textNodes;
 
@@ -11,15 +12,18 @@ fetch(url)
     .then(dict => onload(dict));
 
 /**
- * @description - This is an event listener which is waiting for messages from the popup button to 
- *                run spell checking or turn off/on highlights
+ * @description This is an event listener which is waiting for requests from the popup button to 
+ *              run spell checking, turn off/on highlights and so on
  */
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    if (request.text) {
+    if (request.command === "DoCheck") {
         spellCheck();
     }
-    if (request.HlState !== null) {
-        turnHighlight(request.HlState);
+    if (request.command === "SwitchState") {
+        turnHighlight();
+    }
+    if (request.command === "SendCurrentSwitchState") {
+        chrome.runtime.sendMessage({command:"SendSwitchState", state: switchState});
     }
     if (request.color !== null) {
         changeHighlightColorTo(request.color);
@@ -28,8 +32,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
 
 /**
- * @description - Enter point of the program, where the dictionaty is loaded and enabled the popup button
- * @param {string} dictionary - Raw form of the loaded dictionary
+ * @description Enter point of the program, where the dictionaty is loaded and enabled the popup button
+ * @param {string} dictionary Raw form of the loaded dictionary
  */
 function onload(dictionary) {
 
@@ -42,14 +46,12 @@ function onload(dictionary) {
     // console.log(filteredElements);
     // textNodes.forEach(node => console.log(node.textContent))
 
-    
-
     // After everything is loaded, the dictionary, elements and other stuff we can enable the button
-    chrome.runtime.sendMessage("enable");
+    chrome.runtime.sendMessage({command:"EnableButton"});
 }
 
 /**
- * @description - This function is triggered by the button up in corner of the browser from popup and it executes spell checking
+ * @description This function is triggered by the button up in corner of the browser from popup and it executes spell checking
  */
 function spellCheck() {
     const VirtualElementHolder = [];
@@ -61,12 +63,13 @@ function spellCheck() {
     for (let i = 0; i < VirtualElementHolder.length; i++) {
         VirtualElementHolder[i].check();
     }
+    switchState = true;
 }
 
 /**
- * @description - Parses raw dictionary into objects with word as key and value with flags of the word or null if it doesn't have flags
- * @param {string} data -  Raw form of the loaded dictionary 
- * @returns {Object} - Object of word as key 
+ * @description Parses raw dictionary into objects with word as key and value with flags of the word or null if it doesn't have flags
+ * @param {string} data Raw form of the loaded dictionary 
+ * @returns {Object} Object of word as key 
  */
 function parseDic(data) {
     // TODO: find out what is that fantom character but it is fixed temporarily
@@ -95,9 +98,9 @@ function parseDic(data) {
 }
 
 /**
- * @description - basicaly filter out every node that do not has any text contentet 
- * @param {NodeList} tags - array of nodes
- * @returns {NodeList} - filtered nodes list
+ * @description basicaly filter out every node that do not has any text contentet 
+ * @param {NodeList} tags array of nodes
+ * @returns {NodeList} filtered nodes list
  */
 function preFilter(tags) {
     let newTags = new Array();
@@ -113,8 +116,8 @@ function preFilter(tags) {
 }
 
 /**
- * @description - Filters out TextNodes from the array of HTML elements 
- * @returns {Array<Node>} - Array of TextNodes
+ * @description Filters out TextNodes from the HTML elements array 
+ * @returns {Array<Node>} Array of TextNodes
  */
 Array.prototype.textNodeFilter = function() {
     let textNodes = [];
@@ -132,9 +135,9 @@ Array.prototype.textNodeFilter = function() {
 }
 
 /**
- * @description - Add node to an array if the array does not consist the given node yet
- * @param {Node} node - Node element which we intend add to the array 
- * @param {Array<Node>} nodeArray - Array which we want to add the node element 
+ * @description Add node to an array if the array does not consist the given node yet
+ * @param {Node} node Node element which we intend add to the array 
+ * @param {Array<Node>} nodeArray Array which we want to add the node element 
  */
 function addNode(node, nodeArray) {
     for (let i = 0; i < nodeArray.length; i++) {
@@ -148,23 +151,27 @@ function addNode(node, nodeArray) {
 
 
 /**
- * @description - Function to turn misspeling highlight on or off
- * @param {boolean} state - Decide whether highlighting should be turned off or on
+ * @description Function to turn misspeling highlight on or off
+ * @param {boolean} state Decide whether highlighting should be turned off or on
  */
-function turnHighlight(state) {
-    if (state) {
-        const spans = document.getElementsByClassName('emptyClassHolder');
-        for (let i = spans.length - 1; i >= 0; i--) {
-            spans[i].className = 'misspell-highlight-SCH-Extension-' + currentHighlightColor;
-        }
-    } else {
+function turnHighlight() {
+    if (switchState) {
         const spans = document.getElementsByClassName('misspell-highlight-SCH-Extension-' + currentHighlightColor);
         for (let i = spans.length - 1; i >= 0; i--) {
             spans[i].className = 'emptyClassHolder';
         }
+    } else {
+        const spans = document.getElementsByClassName('emptyClassHolder');
+        for (let i = spans.length - 1; i >= 0; i--) {
+            spans[i].className = 'misspell-highlight-SCH-Extension-' + currentHighlightColor;
+        }
     }
 }
 
+/**
+ * @description Change color of words marked as misspelled 
+ * @param {string} color Color which we want change to the highlighting
+ */
 function changeHighlightColorTo(color) {
     if (currentHighlightColor !== color) {
         const spans = document.getElementsByClassName('misspell-highlight-SCH-Extension-' + currentHighlightColor);

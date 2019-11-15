@@ -6,7 +6,9 @@ nastavitelna farba
 pri dalsej kontrole miznu elementy(find out why) - DONE
 
 
-
 iny slovnik
+remove unnecessary span container (if possible find a better solution)
+
+
 uzivatelske slova flagnut
 color picker for highlighting

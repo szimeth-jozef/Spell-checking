@@ -36,7 +36,7 @@ class VirtualElement {
                 }
                 else {
                     const wrapTag = document.createElement('span');
-                    wrapTag.setAttribute('class', 'misspell-highlight-SCH-Extension-yellow');
+                    wrapTag.setAttribute('class', 'misspell-highlight-SCH-Extension-' + currentHighlightColor);
                     wrapTag.appendChild(document.createTextNode(word + " "));
                     this.motherNode.appendChild(wrapTag);
                 }
@@ -52,7 +52,7 @@ class VirtualElement {
             const result = this.compare(this.getRidOfPunctuation(words[0]));
             if (!result) {
                 const wrapTag = document.createElement('span');
-                wrapTag.setAttribute('class', 'misspell-highlight-SCH-Extension-yellow');
+                wrapTag.setAttribute('class', 'misspell-highlight-SCH-Extension-' + currentHighlightColor);
                 wrapTag.appendChild(document.createTextNode(words[0]));
                 // Finally replace old textNode with wrapTag
                 this.node.replaceWith(wrapTag);
