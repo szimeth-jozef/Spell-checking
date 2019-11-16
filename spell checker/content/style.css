@@ -3,6 +3,7 @@
     color: black !important;
     text-decoration: underline;
     text-decoration-color: red;
+    display: inline;
 }
 
 .misspell-highlight-SCH-Extension-blue {
@@ -10,6 +11,7 @@
     color: white !important;
     text-decoration: underline;
     text-decoration-color: red;
+    display: inline;
 }
 
 .misspell-highlight-SCH-Extension-red {
@@ -17,6 +19,7 @@
     color: white !important;
     text-decoration: underline;
     text-decoration-color: red;
+    display: inline;
 }
 
 .misspell-highlight-SCH-Extension-white {
@@ -24,6 +27,7 @@
     color: black !important;
     text-decoration: underline;
     text-decoration-color: red;
+    display: inline;
 }
 
 /* .misspell-highlight-SCH-Extension {

@@ -13,8 +13,8 @@ class VirtualElement {
      */
     constructor(textNode)  {
         this.node = textNode;
-        this.motherNode = null;
-        this.textNodeCache = [];
+        this.nodeCache = [];
+        this.needToApplyCache = false;
     }
 
     /**
@@ -26,28 +26,19 @@ class VirtualElement {
 
             for (const word of words) {
                 const result = this.compare(this.getRidOfPunctuation(word));
-                this.createMotherNode(result);
                 if (result) {
-                    if (this.motherNode) {
-                        this.motherNode.appendChild(document.createTextNode(word + " "));
-                    } else {
-                        this.textNodeCache.push(document.createTextNode(word + " "));
-                    }
+                    this.nodeCache.push(document.createTextNode(word + " "));
                 }
                 else {
                     const wrapTag = document.createElement('span');
                     wrapTag.setAttribute('class', 'misspell-highlight-SCH-Extension-' + currentHighlightColor);
                     wrapTag.appendChild(document.createTextNode(word + " "));
-                    this.motherNode.appendChild(wrapTag);
+                    this.nodeCache.push(wrapTag);
+                    this.needToApplyCache = true;
                 }
             }
+            this.applyNodeCache();
 
-            // Clear the cache in case any of the words wasn't misspelled
-            this.textNodeCache = [];
-            // Finally replace old textNode with our motherNode only if motherNode is not null
-            if (this.motherNode) {
-                this.node.replaceWith(this.motherNode);
-            }
         } else {
             const result = this.compare(this.getRidOfPunctuation(words[0]));
             if (!result) {
@@ -60,19 +51,30 @@ class VirtualElement {
         }
     }
 
-    /**
-     * @description - This will create motherNode if the result is false and if it is not created yet 
-     * @param {boolean} res - Is the result of the tested word
-     */
-    createMotherNode(res) {
-        if (!res && this.motherNode === null) {
-            this.motherNode = document.createElement('span');
-            if (this.textNodeCache.length !== 0) {
-                for (const node of this.textNodeCache) {
-                    this.motherNode.appendChild(node);
-                }
-                this.textNodeCache = [];
+    applyNodeCache() {
+        if (this.needToApplyCache) {
+            const newChildNodes = Array.from(this.node.parentNode.childNodes);
+            const indexOfNode = newChildNodes.indexOf(this.node);
+            for (let [i, j] = [indexOfNode + 1, 0]; i < indexOfNode + this.nodeCache.length + 1; i++, j++) {
+                newChildNodes.splice(i, 0, this.nodeCache[j]);
             }
+            newChildNodes.splice(indexOfNode, 1);
+            this.populateNewChildNodes(newChildNodes);
+        } 
+        // Redundant step, only for convenience
+        else {
+            this.nodeCache = [];
+        }
+        this.needToApplyCache = false;
+    }
+
+    populateNewChildNodes(childNodes) {
+        const parentNode = this.node.parentNode;
+        while (parentNode.firstChild) {
+            parentNode.removeChild(parentNode.firstChild);
+        }
+        for (const child of childNodes) {
+            parentNode.appendChild(child);
         }
     }
 
