@@ -13,12 +13,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.command === "EnableButton") {
         chrome.browserAction.enable();
     }
-    if (request.command === "SendSwitchState") {
-        chrome.runtime.sendMessage({command:"SwitchState", state: request.state});
-    }
-    if (request.command === "GetSwitchState") {
-        chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
-            chrome.tabs.sendMessage(tabs[0].id, {command:"SendCurrentSwitchState"});
-        });
+    if (request.command === "ForwardBtnState") {
+        chrome.runtime.sendMessage({command:"SetBtnText", state: request.state});
     }
 });

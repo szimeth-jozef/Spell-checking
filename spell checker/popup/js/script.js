@@ -1,13 +1,13 @@
 // Highlight tun on/off button 
 // [false: disabled; true: enabled]
 
-let switchState;
+// Global variables
+let HLButton;
 
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    if (request.command === "SwitchState") {
-        // Here is now the switch state now what
-        switchState = request.state;
+    if (request.command === "SetBtnText") {
+        setHighlightBtnText(request.state);
     }
 });
 
@@ -17,10 +17,8 @@ window.onload = () => {
      * @description Here's a listener attached to button in the popup which is sending request to content script to run the spell check
      */
     document.getElementById('run').addEventListener("click", () => {
- 
         const request = {
             command: "DoCheck",
-            HlState: null,
             color: null
         };
         makeRequest(request);
@@ -32,51 +30,19 @@ window.onload = () => {
      * @description This event listener is attached to the Disable/Enable button and his task is 
      * sending requests to content script on every click event
      */
-    const HLButton = document.getElementById('switch');
+    HLButton = document.getElementById('switch');
     // The popup menu is every time reloaded when it is closed and opened again so I have to make sure that the text on
-    // button is matching with current state
-    const req = {
-        command: "SwitchState",
-        HlState: null,
-        color: null
-    };
-    makeRequest(req);
+    // the button is matching with the current highlighting state
+    makeRequest({command:"GetBtnState", color:null});
 
     HLButton.addEventListener("click", () => {
         console.log("HL Button clicked");
-        chrome.runtime.sendMessage({command:"GetSwitchState"});
-        if (switchState) {
-            // Here the hl is enabled so we want to disable it.
-            // Set switch state to false:disabled
-            switchState = false
 
-            // Trigger something to turn off hl and change button text to Enable
-            const request = {
-                command: null,
-                HlState: switchState,
-                color: null
-            };
-            makeRequest(request);
-            HLButton.textContent = "Enable"; 
-
-        } else {
-            // Set switch state to true:enabled
-            switchState = true;
-
-            // Trigger something to turn on hl and change button text to Disable
-            const request = {
-                command: null,
-                HlState: switchState,
-                color: null
-            };
-            makeRequest(request);
-            HLButton.textContent = "Disable";
-
-        }
+        makeRequest({command:"SwitchBtnState", color:null});
     });
 
     /**
-     * @description This part of code is hangling click events on the color picker boxes
+     * @description This part of code is handling click events on the color picker boxes
      */
     const colorBoxes = document.getElementsByClassName('color-box');
 
@@ -85,7 +51,6 @@ window.onload = () => {
             // console.log(this.id);
             const request = {
                 command: null,
-                HlState: null,
                 color: this.id
             };
             makeRequest(request);
@@ -107,3 +72,16 @@ function makeRequest(request) {
     });
 }
 
+/**
+ * @description Changes the buttons text according to the state parameter
+ * @param {boolean} state True sets text to Disable and false to Enable
+ */
+function setHighlightBtnText(state) {
+    if (state !== undefined) {
+        if (state) {
+            HLButton.textContent = "Disable"
+        } else {
+            HLButton.textContent = "Enable"
+        }
+    }
+}

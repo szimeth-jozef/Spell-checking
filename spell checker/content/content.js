@@ -2,7 +2,7 @@
 const url = chrome.runtime.getURL('./data/sk_SK.dic');
 const blackListTags = ['SCRIPT', 'NOSCRIPT', 'LINK', 'IMG', 'STYLE'];
 let currentHighlightColor = 'yellow';
-let switchState;
+let highlightBtnState = undefined;
 let parsedDic;
 let textNodes;
 
@@ -19,11 +19,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.command === "DoCheck") {
         spellCheck();
     }
-    if (request.command === "SwitchState") {
+    if (request.command === "SwitchBtnState") {
         turnHighlight();
     }
-    if (request.command === "SendCurrentSwitchState") {
-        chrome.runtime.sendMessage({command:"SendSwitchState", state: switchState});
+    if (request.command === "GetBtnState") {
+        chrome.runtime.sendMessage({command:"ForwardBtnState", state: highlightBtnState});
     }
     if (request.color !== null) {
         changeHighlightColorTo(request.color);
@@ -63,7 +63,16 @@ function spellCheck() {
     for (let i = 0; i < VirtualElementHolder.length; i++) {
         VirtualElementHolder[i].check();
     }
-    switchState = true;
+
+    // Button behaviour logic: 
+    // When the 'Run cheking' is clicked first time it sets the highlight turn on/off buttons state to true, 
+    // and in case the highlighting is turned off and the 'Run cheking' is clicked once again it turns it back 
+    if (highlightBtnState === undefined) {
+        highlightBtnState = true;
+    } else {
+        highlightBtnState = false;
+        turnHighlight();
+    }
 }
 
 /**
@@ -72,7 +81,6 @@ function spellCheck() {
  * @returns {Object} Object of word as key 
  */
 function parseDic(data) {
-    // TODO: find out what is that fantom character but it is fixed temporarily
     const dictionary = {};
     const fantomCharacter = data[9];
 
@@ -155,15 +163,21 @@ function addNode(node, nodeArray) {
  * @param {boolean} state Decide whether highlighting should be turned off or on
  */
 function turnHighlight() {
-    if (switchState) {
-        const spans = document.getElementsByClassName('misspell-highlight-SCH-Extension-' + currentHighlightColor);
-        for (let i = spans.length - 1; i >= 0; i--) {
-            spans[i].className = 'emptyClassHolder';
-        }
-    } else {
-        const spans = document.getElementsByClassName('emptyClassHolder');
-        for (let i = spans.length - 1; i >= 0; i--) {
-            spans[i].className = 'misspell-highlight-SCH-Extension-' + currentHighlightColor;
+    if (highlightBtnState !== undefined) {
+        if (highlightBtnState) {
+            const spans = document.getElementsByClassName('misspell-highlight-SCH-Extension-' + currentHighlightColor);
+            for (let i = spans.length - 1; i >= 0; i--) {
+                spans[i].className = 'emptyClassHolder';
+            }
+            highlightBtnState = false;
+            chrome.runtime.sendMessage({command:"ForwardBtnState", state: highlightBtnState});
+        } else {
+            const spans = document.getElementsByClassName('emptyClassHolder');
+            for (let i = spans.length - 1; i >= 0; i--) {
+                spans[i].className = 'misspell-highlight-SCH-Extension-' + currentHighlightColor;
+            }
+            highlightBtnState = true;
+            chrome.runtime.sendMessage({command:"ForwardBtnState", state: highlightBtnState});
         }
     }
 }
