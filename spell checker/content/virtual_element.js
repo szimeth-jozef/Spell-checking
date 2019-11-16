@@ -13,6 +13,7 @@ class VirtualElement {
      */
     constructor(textNode)  {
         this.node = textNode;
+        this.parentNode = textNode.parentNode;
         this.nodeCache = [];
         this.needToApplyCache = false;
     }
@@ -53,12 +54,13 @@ class VirtualElement {
 
     applyNodeCache() {
         if (this.needToApplyCache) {
-            const newChildNodes = Array.from(this.node.parentNode.childNodes);
+            const newChildNodes = Array.from(this.parentNode.childNodes);
             const indexOfNode = newChildNodes.indexOf(this.node);
             for (let [i, j] = [indexOfNode + 1, 0]; i < indexOfNode + this.nodeCache.length + 1; i++, j++) {
                 newChildNodes.splice(i, 0, this.nodeCache[j]);
             }
             newChildNodes.splice(indexOfNode, 1);
+            debugger
             this.populateNewChildNodes(newChildNodes);
         } 
         // Redundant step, only for convenience
@@ -69,12 +71,12 @@ class VirtualElement {
     }
 
     populateNewChildNodes(childNodes) {
-        const parentNode = this.node.parentNode;
-        while (parentNode.firstChild) {
-            parentNode.removeChild(parentNode.firstChild);
+        // const parentNode = this.node.parentNode;
+        while (this.parentNode.firstChild) {
+            this.parentNode.removeChild(this.parentNode.firstChild);
         }
         for (const child of childNodes) {
-            parentNode.appendChild(child);
+            this.parentNode.appendChild(child);
         }
     }
 

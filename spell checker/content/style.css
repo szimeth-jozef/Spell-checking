@@ -30,6 +30,10 @@
     display: inline;
 }
 
+.emptyClassHolder {
+    display: inline;
+}
+
 /* .misspell-highlight-SCH-Extension {
     display: inline-block;
     position: relative;
