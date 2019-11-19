@@ -35,7 +35,6 @@ class VirtualElement {
                     }
                 }
             }
-            this.applyNodeCache();
 
         } else {
             if (words[0].trim().length !== 0) {
