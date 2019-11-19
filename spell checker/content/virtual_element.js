@@ -24,19 +24,31 @@ class VirtualElement {
      */
     check() {
         const words = this.node.textContent.split(/\s+/g);
-        // debugger
         if (words.length > 1) {
 
-            for (const word of words) {
-                this.compare(word, this.getRidOfPunctuation(word), 'multi');
+            for (let i = 0; i < words.length; i++) {
+                if (words[i].trim().length !== 0) {
+                    if (i === words.length - 1) {
+                        this.compare(words[i], this.getRidOfPunctuation(words[i]), 'multi', true);
+                    } else {
+                        this.compare(words[i], this.getRidOfPunctuation(words[i]), 'multi');
+                    }
+                }
             }
             this.applyNodeCache();
 
         } else {
-            this.compare(words[0], this.getRidOfPunctuation(words[0]), 'single');
+            if (words[0].trim().length !== 0) {
+                this.compare(words[0], this.getRidOfPunctuation(words[0]), 'single');
+            }
         }
     }
 
+    /**
+     * @description This method handles wrapping of "single or one worded" nodes
+     * @param {boolean} result Based on this will be wrapped or not
+     * @param {string} word The word which is gonna be wrapped
+     */
     wrapSingleWord(result, word) {
         if (!result) {
             const wrapTag = document.createElement('span');
@@ -47,7 +59,13 @@ class VirtualElement {
         }
     }
 
-    wrapMultiWord(result, word) {
+    /**
+     * @description This method handles wrapping of more than "one worded" nodes
+     * @param {boolean} result Based on this will be wrapped or not
+     * @param {string} word The word which is gonna be wrapped
+     * @param {boolean} canApply Based on this will run the apply method
+     */
+    wrapMultiWord(result, word, canApply) {
         if (result) {
             this.nodeCache.push(document.createTextNode(word + " "));
         }
@@ -58,8 +76,15 @@ class VirtualElement {
             this.nodeCache.push(wrapTag);
             this.needToApplyCache = true;
         }
+
+        if (canApply) {
+            this.applyNodeCache();
+        }
     }
 
+    /**
+     * @description It applies the cached nodes to the childNodes property
+     */
     applyNodeCache() {
         if (this.needToApplyCache) {
             const newChildNodes = Array.from(this.parentNode.childNodes);
@@ -77,6 +102,10 @@ class VirtualElement {
         this.needToApplyCache = false;
     }
 
+    /**
+     * @description Replaces old child nodes with new ones
+     * @param {Array<node>} childNodes Nodes which are going to be inserted 
+     */
     populateNewChildNodes(childNodes) {
         // const parentNode = this.node.parentNode;
         while (this.parentNode.firstChild) {
@@ -92,15 +121,15 @@ class VirtualElement {
      * @param {string} word - Word which is going to be tested
      * @returns {boolean} - Returns true if the passed word was found and false if wasn't
      */
-    compare(orgWord, word, wrapMode) {
-        debugger
-        chrome.runtime.sendMessage({command:"CheckThis", word: word, original: orgWord, mode: wrapMode, index: this.index});
-
-
-        // if (word in parsedDic || word.toLowerCase() in parsedDic) {
-        //     return true;
-        // }
-        // return false;
+    compare(orgWord, word, wrapMode, apply=false) {
+        chrome.runtime.sendMessage({
+            command:"CheckThis", 
+            word: word, 
+            original: orgWord, 
+            mode: wrapMode, 
+            index: this.index, 
+            apply:apply
+        });
     }
 
     /**
@@ -114,9 +143,5 @@ class VirtualElement {
         let clsWord = word.replace(regex, ""); 
         clsWord = clsWord.replace(questionMark, "");
         return clsWord; 
-    }
-
-    print() {
-        console.log("workin mtf")
     }
 }

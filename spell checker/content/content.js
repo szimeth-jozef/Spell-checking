@@ -1,15 +1,13 @@
 // Global variables
 const blackListTags = ['SCRIPT', 'NOSCRIPT', 'LINK', 'IMG', 'STYLE'];
 let highlightBtnState = undefined;
-let textNodes = null;
-let parsedDic;
 let VirtualElementHolder = [];
 
 const body = document.querySelectorAll('body *');
 const filteredElements = preFilter(body);
-textNodes = filteredElements.textNodeFilter();
+const textNodes = filteredElements.textNodeFilter();
 chrome.runtime.sendMessage({command:"EnableButton"});
-console.log("Request sent");
+console.log("Request sent"); 
 
 /**
  * @description This is an event listener which is waiting for requests from the popup button to 
@@ -17,11 +15,10 @@ console.log("Request sent");
  */
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.command === "Result") {
-        debugger
         if (request.wrapMode === "single") {
             VirtualElementHolder[request.index].wrapSingleWord(request.res, request.word);
         } else {
-            VirtualElementHolder[request.index].wrapMultiWord(request.res, request.word);
+            VirtualElementHolder[request.index].wrapMultiWord(request.res, request.word, request.apply);
         }
     }
     if (request.command === "DoCheck") {

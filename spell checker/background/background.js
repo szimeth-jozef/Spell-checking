@@ -5,6 +5,10 @@ const affUrl = chrome.runtime.getURL('./data/sk_SK.aff');
 
 const dictionary = new Spellchecker();
 
+/**
+ * @description Loads the dictionary file and the aff file then returns them as a single object
+ * @returns {object} Returns raw dictionary data
+ */
 async function loadDictionary() {
     const dicResponse = await fetch(dicUrl);
     const affResponse = await fetch(affUrl);
@@ -45,7 +49,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.command === "CheckThis") {
         const result = dictionary.check(request.word);
         chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
-            chrome.tabs.sendMessage(tabs[0].id, {command:"Result", res: result, word: request.original, index: request.index, wrapMode: request.mode});
+            chrome.tabs.sendMessage(tabs[0].id, {command:"Result", res: result, word: request.original, index: request.index, wrapMode: request.mode, apply: request.apply, color: null});
         });
     }
 });
