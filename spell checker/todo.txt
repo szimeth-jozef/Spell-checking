@@ -2,12 +2,12 @@ js doc doplnit - DONE
 preist celu stranku - DONE
 tlacitko nesmie byt pouzitelne kym sa nenacitalo vsetko - DONE
 regex rozdelovanie slov v paragrafe - DONE
-nastavitelna farba
+nastavitelna farba - DONE 
 pri dalsej kontrole miznu elementy(find out why) - DONE
 
 
-iny slovnik
-remove unnecessary span container (if possible find a better solution)
+iny slovnik - DONE
+remove unnecessary span container - DONE
 
 
 uzivatelske slova flagnut

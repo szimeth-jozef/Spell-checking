@@ -41,10 +41,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
  */
 function spellCheck() {
     VirtualElementHolder = [];
-    let i = 0;
-    for (let textNode of textNodes) {
-        VirtualElementHolder.push(new VirtualElement(textNode, i));
-        i++;
+    for (let i = 0; i < textNodes.length; i++) {
+        VirtualElementHolder.push(new VirtualElement(textNodes[i], i));
     }
 
     for (let i = 0; i < VirtualElementHolder.length; i++) {

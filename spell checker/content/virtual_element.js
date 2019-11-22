@@ -94,7 +94,6 @@ class VirtualElement {
             newChildNodes.splice(indexOfNode, 1);
             this.populateNewChildNodes(newChildNodes);
         } 
-        // Redundant step, only for convenience
         else {
             this.nodeCache = [];
         }
