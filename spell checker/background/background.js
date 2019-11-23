@@ -10,20 +10,24 @@ const dictionary = new Spellchecker();
  * @returns {object} Returns raw dictionary data
  */
 async function loadDictionary() {
+    const t1 = performance.now();
     const dicResponse = await fetch(dicUrl);
     const affResponse = await fetch(affUrl);
 
     const dicData = await dicResponse.text();
     const affData = await affResponse.text();
-    console.log(`Everything is fetched`);
+    const t2 = performance.now();
+    console.log(`Everything fetched in ${t2 - t1} ms`);
 
     return {aff: affData, dic: dicData};
 }
 
 loadDictionary().then(rawDict => {
+    const t3 = performance.now();
     const DICT = dictionary.parse(rawDict);
     dictionary.use(DICT);
-    console.log(`Loaded`)
+    const t4 = performance.now();
+    console.log(`Loaded in ${t4 - t3} ms`)
 });
 
 

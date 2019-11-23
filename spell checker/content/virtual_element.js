@@ -135,7 +135,7 @@ class VirtualElement {
      * @returns {string} - Returns this.currentWord without punctuation
      */
     getRidOfPunctuation(word) {
-        // TODO: clean up the double replace and question mark problem
+        // TODO: clean up the double replace and question mark problem (Double escaping does not work)
         const regex = /[.,\/#!$%\^&\*;:{}=\-_`~()]/g;
         const questionMark = /\?/g;  
         let clsWord = word.replace(regex, ""); 
