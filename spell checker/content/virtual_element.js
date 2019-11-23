@@ -115,9 +115,11 @@ class VirtualElement {
     }
 
     /**
-     * 
-     * @param {string} word - Word which is going to be tested
-     * @returns {boolean} - Returns true if the passed word was found and false if wasn't
+     * @description Sends request to the background where the dictionaty lives, there the word is compared and the background sends back the results to the contet
+     * @param {string} orgWord The original word which was in the text node
+     * @param {string} word  Original word without punctuation
+     * @param {string} wrapMode Is a key word 'single' or 'mutli', means which wrap method to use
+     * @param {boolean} apply Indicates wheather to use method applyNodeCache
      */
     compare(orgWord, word, wrapMode, apply=false) {
         chrome.runtime.sendMessage({
