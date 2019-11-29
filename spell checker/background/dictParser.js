@@ -1,3 +1,5 @@
+// author: ---------
+
 var Dictionary = function(dict) {
     this.rules = {};
     this.dictionaryTable = {};
