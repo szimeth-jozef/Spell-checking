@@ -1,4 +1,4 @@
-// author: ---------
+// author: https://www.npmjs.com/package/hunspell-spellchecker
 
 var Dictionary = function(dict) {
     this.rules = {};
