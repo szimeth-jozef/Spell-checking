@@ -4,7 +4,7 @@ tlacitko nesmie byt pouzitelne kym sa nenacitalo vsetko - DONE
 regex rozdelovanie slov v paragrafe - DONE
 nastavitelna farba - DONE 
 pri dalsej kontrole miznu elementy(find out why) - DONE
-
+prezriet parser a najist preco súhlasite je false
 
 iny slovnik - DONE
 remove unnecessary span container - DONE
