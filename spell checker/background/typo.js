@@ -380,6 +380,7 @@ Typo.prototype = {
 				this.flags[ruleType] = definitionParts[1];
 			}
 		}
+		console.log("Loaded and parsed AFF");
 		
 		return rules;
 	},
@@ -505,6 +506,7 @@ Typo.prototype = {
 				addWord(word.trim(), []);
 			}
 		}
+		console.log("Loaded and parsed dictionary!");
 		
 		return dictionaryTable;
 	},

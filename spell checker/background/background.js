@@ -1,9 +1,10 @@
 console.log("Background script console...");
 
-const dicUrl = chrome.runtime.getURL('./data/sk_SK.dic');
-const affUrl = chrome.runtime.getURL('./data/sk_SK.aff');
+const dicUrl = chrome.runtime.getURL('./dictionaries/sk_SK/sk_SK.dic');
+const affUrl = chrome.runtime.getURL('./dictionaries/sk_SK/sk_SK.aff');
 
-const dictionary = new Spellchecker();
+// If you want to use dictParser.js instead uncomment this and the loadDictionary call.
+// const dictionary = new Spellchecker();
 
 /**
  * @description Loads the dictionary file and the aff file then returns them as a single object
@@ -22,14 +23,18 @@ async function loadDictionary() {
     return {aff: affData, dic: dicData};
 }
 
-loadDictionary().then(rawDict => {
-    const t3 = performance.now();
-    const DICT = dictionary.parse(rawDict);
-    dictionary.use(DICT);
-    const t4 = performance.now();
-    console.log(`Loaded in ${t4 - t3} ms`)
-});
+// loadDictionary().then(rawDict => {
+//     const t3 = performance.now();
+//     const DICT = dictionary.parse(rawDict);
+//     dictionary.use(DICT);
+//     const t4 = performance.now();
+//     console.log(`Loaded in ${t4 - t3} ms`)
+// });
 
+/**
+ * @description This below is using typo.js
+ */
+const dictionary = new Typo("sk_SK", false, false, { dictionaryPath: "./dictionaries" });
 
 /**
  * @description - by default the browser action is disabled so we can't run spell check while everything isn't loaded.

@@ -26,7 +26,7 @@
         }
     ],
     "background": {
-        "scripts": ["background/dictParser.js", "background/background.js"]
+        "scripts": ["background/dictParser.js", "background/typo.js", "background/background.js"]
     },
     "permissions": ["tabs"]
 }
