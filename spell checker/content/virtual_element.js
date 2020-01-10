@@ -11,8 +11,9 @@ class VirtualElement {
     /**
      * @param {textNode} textNode - TextNode from HTML elements
      */
-    constructor(textNode)  {
+    constructor(textNode, i)  {
         this.node = textNode;
+        this.index = i;
         this.parentNode = textNode.parentNode;
         this.nodeCache = [];
         this.needToApplyCache = false;
@@ -25,33 +26,64 @@ class VirtualElement {
         const words = this.node.textContent.split(/\s+/g);
         if (words.length > 1) {
 
-            for (const word of words) {
-                const result = this.compare(this.getRidOfPunctuation(word));
-                if (result) {
-                    this.nodeCache.push(document.createTextNode(word + " "));
-                }
-                else {
-                    const wrapTag = document.createElement('span');
-                    wrapTag.setAttribute('class', 'misspell-highlight-SCH-Extension-' + currentHighlightColor);
-                    wrapTag.appendChild(document.createTextNode(word + " "));
-                    this.nodeCache.push(wrapTag);
-                    this.needToApplyCache = true;
+            for (let i = 0; i < words.length; i++) {
+                if (words[i].trim().length !== 0) {
+                    if (i === words.length - 1) {
+                        this.compare(words[i], this.getRidOfPunctuation(words[i]), 'multi', true);
+                    } else {
+                        this.compare(words[i], this.getRidOfPunctuation(words[i]), 'multi');
+                    }
                 }
             }
-            this.applyNodeCache();
 
         } else {
-            const result = this.compare(this.getRidOfPunctuation(words[0]));
-            if (!result) {
-                const wrapTag = document.createElement('span');
-                wrapTag.setAttribute('class', 'misspell-highlight-SCH-Extension-' + currentHighlightColor);
-                wrapTag.appendChild(document.createTextNode(words[0]));
-                // Finally replace old textNode with wrapTag
-                this.node.replaceWith(wrapTag);
+            if (words[0].trim().length !== 0) {
+                this.compare(words[0], this.getRidOfPunctuation(words[0]), 'single');
             }
         }
     }
 
+    /**
+     * @description This method handles wrapping of "single or one worded" nodes
+     * @param {boolean} result Based on this will be wrapped or not
+     * @param {string} word The word which is gonna be wrapped
+     */
+    wrapSingleWord(result, word) {
+        if (!result) {
+            const wrapTag = document.createElement('span');
+            wrapTag.setAttribute('class', 'misspell-highlight-SCH-Extension-' + currentHighlightColor);
+            wrapTag.appendChild(document.createTextNode(word));
+            // Finally replace old textNode with wrapTag
+            this.node.replaceWith(wrapTag);
+        }
+    }
+
+    /**
+     * @description This method handles wrapping of more than "one worded" nodes
+     * @param {boolean} result Based on this will be wrapped or not
+     * @param {string} word The word which is gonna be wrapped
+     * @param {boolean} canApply Based on this will run the apply method
+     */
+    wrapMultiWord(result, word, canApply) {
+        if (result) {
+            this.nodeCache.push(document.createTextNode(word + " "));
+        }
+        else {
+            const wrapTag = document.createElement('span');
+            wrapTag.setAttribute('class', 'misspell-highlight-SCH-Extension-' + currentHighlightColor);
+            wrapTag.appendChild(document.createTextNode(word + " "));
+            this.nodeCache.push(wrapTag);
+            this.needToApplyCache = true;
+        }
+
+        if (canApply) {
+            this.applyNodeCache();
+        }
+    }
+
+    /**
+     * @description It applies the cached nodes to the childNodes property
+     */
     applyNodeCache() {
         if (this.needToApplyCache) {
             const newChildNodes = Array.from(this.parentNode.childNodes);
@@ -60,16 +92,18 @@ class VirtualElement {
                 newChildNodes.splice(i, 0, this.nodeCache[j]);
             }
             newChildNodes.splice(indexOfNode, 1);
-            debugger
             this.populateNewChildNodes(newChildNodes);
         } 
-        // Redundant step, only for convenience
         else {
             this.nodeCache = [];
         }
         this.needToApplyCache = false;
     }
 
+    /**
+     * @description Replaces old child nodes with new ones
+     * @param {Array<node>} childNodes Nodes which are going to be inserted 
+     */
     populateNewChildNodes(childNodes) {
         // const parentNode = this.node.parentNode;
         while (this.parentNode.firstChild) {
@@ -81,15 +115,21 @@ class VirtualElement {
     }
 
     /**
-     * 
-     * @param {string} word - Word which is going to be tested
-     * @returns {boolean} - Returns true if the passed word was found and false if wasn't
+     * @description Sends request to the background where the dictionaty lives, there the word is compared and the background sends back the results to the contet
+     * @param {string} orgWord The original word which was in the text node
+     * @param {string} word  Original word without punctuation
+     * @param {string} wrapMode Is a key word 'single' or 'mutli', means which wrap method to use
+     * @param {boolean} apply Indicates wheather to use method applyNodeCache
      */
-    compare(word) {
-        if (word in parsedDic || word.toLowerCase() in parsedDic) {
-            return true;
-        }
-        return false;
+    compare(orgWord, word, wrapMode, apply=false) {
+        chrome.runtime.sendMessage({
+            command:"CheckThis", 
+            word: word, 
+            original: orgWord, 
+            mode: wrapMode, 
+            index: this.index, 
+            apply:apply
+        });
     }
 
     /**
@@ -97,7 +137,7 @@ class VirtualElement {
      * @returns {string} - Returns this.currentWord without punctuation
      */
     getRidOfPunctuation(word) {
-        // TODO: clean up the double replace and question mark problem
+        // TODO: clean up the double replace and question mark problem (Double escaping does not work)
         const regex = /[.,\/#!$%\^&\*;:{}=\-_`~()]/g;
         const questionMark = /\?/g;  
         let clsWord = word.replace(regex, ""); 

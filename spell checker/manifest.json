@@ -22,11 +22,11 @@
             "file:///home/joco/GitHub/Spell-checking/spell%20checker/test-page.html"
         ],
         "css": [ "content/style.css" ],
-        "js": ["content/content.js", "content/dictionary_buffer.js", "content/virtual_element.js"]
+        "js": ["content/contentFunctions.js", "content/content.js", "content/virtual_element.js"]
         }
     ],
     "background": {
-        "scripts": ["background/background.js"]
+        "scripts": ["background/dictParser.js", "background/typo.js", "background/background.js"]
     },
     "permissions": ["tabs"]
 }

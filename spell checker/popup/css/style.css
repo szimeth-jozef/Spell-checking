@@ -1,5 +1,8 @@
 body {
-    width: 200px;
+    width: 240px;
+    /* "Dark mode"
+    background: #292929;
+    color: white; */
 }
 
 h1 {
@@ -12,6 +15,7 @@ h1 {
 
 .check-btn {
     display: inline-block;
+    margin-right: 20px;
 }
 
 .highlighting {
@@ -45,4 +49,26 @@ h1 {
 .colors {
     display: flex;
     margin-bottom: 10px;
+}
+
+.interface button {
+    color: #494949 !important;
+    text-transform: uppercase;
+    text-decoration: none;
+    background: #ffffff;
+    padding: 5px;
+    border: 2px solid #494949 !important;
+    display: inline-block;
+    transition: all 0.4s ease 0s;
+}
+
+.interface button:hover {
+    color: #ffffff !important;
+    background: #228cd3;
+    border-color: #228cd3 !important;
+    transition: all 0.4s ease 0s;
+}
+
+.interface button:focus {
+    outline: none;
 }
