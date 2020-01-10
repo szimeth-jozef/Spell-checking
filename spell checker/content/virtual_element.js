@@ -11,9 +11,10 @@ class VirtualElement {
     /**
      * @param {textNode} textNode - TextNode from HTML elements
      */
-    constructor(textNode, i)  {
+    constructor(textNode, i, is_last=false)  {
         this.node = textNode;
         this.index = i;
+        this.is_last = is_last;
         this.parentNode = textNode.parentNode;
         this.nodeCache = [];
         this.needToApplyCache = false;

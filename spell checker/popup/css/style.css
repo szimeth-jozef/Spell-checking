@@ -43,12 +43,42 @@ h1 {
 
 .current {
     border: 2px solid rgb(43, 43, 43);
-    
 }
 
 .colors {
     display: flex;
     margin-bottom: 10px;
+    align-items: center;
+}
+
+.stepper-container {
+    display: flex;
+    align-items: center;
+    height: 25px;
+    margin-top: 5px;
+    margin-left: 25px;
+}
+
+.stepper-container p {
+    margin-left: 5px;
+}
+
+.stepper-container button {
+    display: inline-block;
+    width: 30px;
+    height: 25px;
+    margin-left: 5px;
+    background: gray;
+    border: none;
+}
+
+.stepper-container button:hover {
+    box-shadow: 0 0 3px rgb(43, 43, 43);
+    background: rgb(85, 85, 85);
+}
+
+.stepper-container button:focus {
+    outline: none;
 }
 
 .interface button {

@@ -9,6 +9,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.command === "SetBtnText") {
         setHighlightBtnText(request.state);
     }
+    if (request.command === "ForwardErrorCount") {
+        document.getElementById('spell-errors').innerText = String(request.count);
+    }
 });
 
 window.onload = () => {
@@ -60,6 +63,17 @@ window.onload = () => {
             this.classList.add('current');
         });
     }
+
+    // Listeners for stepping forward or backward between errors
+    document.getElementById('step-back-btn').addEventListener('click', function(event){
+        console.log('Stepped backward');
+    });
+
+    document.getElementById('step-forward-btn').addEventListener('click', function(event){
+        console.log('Stepped forward');
+        const bottom = document.getElementById('collapse-footer-nav');
+        bottom.scrollIntoView();
+    });
 }
 /**
  * @description Make request to the current tab with passed request object

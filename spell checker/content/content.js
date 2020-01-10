@@ -15,9 +15,10 @@ console.log("Request sent");
  */
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.command === "Result") {
-        console.log(request.word, request.res);
+        // console.log(request.word, request.res);
         if (request.wrapMode === "single") {
-            VirtualElementHolder[request.index].wrapSingleWord(request.res, request.word);
+            // Check whether it's working or not
+            const isLast = VirtualElementHolder[request.index].wrapSingleWord(request.res, request.word);
         } else {
             VirtualElementHolder[request.index].wrapMultiWord(request.res, request.word, request.apply);
         }
@@ -43,10 +44,15 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 function spellCheck() {
     VirtualElementHolder = [];
     for (let i = 0; i < textNodes.length; i++) {
+        if (i === textNodes.length - 1) {
+            VirtualElementHolder.push(new VirtualElement(textNodes[i], i, true));
+            continue;    
+        }
         VirtualElementHolder.push(new VirtualElement(textNodes[i], i));
     }
 
     for (let i = 0; i < VirtualElementHolder.length; i++) {
+
         VirtualElementHolder[i].check();
     }
 
@@ -59,4 +65,10 @@ function spellCheck() {
         highlightBtnState = false;
         turnHighlight();
     }
+
+    // Here I get all of the error span tags then send the count to the popup window
+    const errors = document.getElementsByClassName('misspell-highlight-SCH-Extension-' + currentHighlightColor);
+    chrome.runtime.sendMessage({command:"ForwardErrorCount", count: errors.length});
+    console.log("count sent", errors)
+    console.log("count sent", errors.length)
 }

@@ -11,4 +11,5 @@ remove unnecessary span container - DONE
 
 
 uzivatelske slova flagnut
-color picker for highlighting
+color picker for highlighting - DONE
+pridat do popup box pocet chyb a step forward a backward medzi chybami
