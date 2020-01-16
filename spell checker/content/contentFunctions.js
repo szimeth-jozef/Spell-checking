@@ -90,3 +90,11 @@ function changeHighlightColorTo(color) {
         currentHighlightColor = color;
     }
 }
+
+
+function sendErrorCount() {
+    errorPointerAt = 1;
+    const errors = document.getElementsByClassName('misspell-highlight-SCH-Extension-' + currentHighlightColor);
+    chrome.runtime.sendMessage({command:"ForwardErrorCount", count: errors.length, pointer: errorPointerAt});
+    errorList = errors;
+}

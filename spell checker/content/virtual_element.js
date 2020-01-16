@@ -48,6 +48,7 @@ class VirtualElement {
      * @description This method handles wrapping of "single or one worded" nodes
      * @param {boolean} result Based on this will be wrapped or not
      * @param {string} word The word which is gonna be wrapped
+     * @returns {boolean} returns whether this object is last or not
      */
     wrapSingleWord(result, word) {
         if (!result) {
@@ -57,6 +58,7 @@ class VirtualElement {
             // Finally replace old textNode with wrapTag
             this.node.replaceWith(wrapTag);
         }
+        return this.is_last;
     }
 
     /**
@@ -64,6 +66,7 @@ class VirtualElement {
      * @param {boolean} result Based on this will be wrapped or not
      * @param {string} word The word which is gonna be wrapped
      * @param {boolean} canApply Based on this will run the apply method
+     * @returns {boolean} returns whether this object is last or not
      */
     wrapMultiWord(result, word, canApply) {
         if (result) {
@@ -80,6 +83,8 @@ class VirtualElement {
         if (canApply) {
             this.applyNodeCache();
         }
+
+        return this.is_last;
     }
 
     /**

@@ -2,6 +2,8 @@
 const blackListTags = ['SCRIPT', 'NOSCRIPT', 'LINK', 'IMG', 'STYLE'];
 let highlightBtnState = undefined;
 let VirtualElementHolder = [];
+let errorList = [];
+let errorPointerAt = 0;
 
 const body = document.querySelectorAll('body *');
 const filteredElements = preFilter(body);
@@ -17,10 +19,11 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.command === "Result") {
         // console.log(request.word, request.res);
         if (request.wrapMode === "single") {
-            // Check whether it's working or not
             const isLast = VirtualElementHolder[request.index].wrapSingleWord(request.res, request.word);
+            if (isLast) sendErrorCount();
         } else {
-            VirtualElementHolder[request.index].wrapMultiWord(request.res, request.word, request.apply);
+            const isLast = VirtualElementHolder[request.index].wrapMultiWord(request.res, request.word, request.apply);
+            if (isLast) sendErrorCount();
         }
     }
     if (request.command === "DoCheck") {
@@ -32,6 +35,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.command === "GetBtnState") {
         chrome.runtime.sendMessage({command:"ForwardBtnState", state: highlightBtnState});
     }
+    if (request.command === "GetErrorCount") chrome.runtime.sendMessage({command:"ForwardErrorCount", count: errorList.length, pointer: errorPointerAt});;
+
     if (request.color !== null) {
         changeHighlightColorTo(request.color);
     }
@@ -65,10 +70,4 @@ function spellCheck() {
         highlightBtnState = false;
         turnHighlight();
     }
-
-    // Here I get all of the error span tags then send the count to the popup window
-    const errors = document.getElementsByClassName('misspell-highlight-SCH-Extension-' + currentHighlightColor);
-    chrome.runtime.sendMessage({command:"ForwardErrorCount", count: errors.length});
-    console.log("count sent", errors)
-    console.log("count sent", errors.length)
 }

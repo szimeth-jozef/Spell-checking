@@ -11,10 +11,14 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     }
     if (request.command === "ForwardErrorCount") {
         document.getElementById('spell-errors').innerText = String(request.count);
+        document.getElementById('currently-on').innerText = String(request.pointer);
     }
 });
 
 window.onload = () => {
+
+    // Get the error count if there is any
+    makeRequest({command: "GetErrorCount", color: null});
 
     /**
      * @description Here's a listener attached to button in the popup which is sending request to content script to run the spell check
@@ -70,9 +74,8 @@ window.onload = () => {
     });
 
     document.getElementById('step-forward-btn').addEventListener('click', function(event){
+        // bottom.scrollIntoView();
         console.log('Stepped forward');
-        const bottom = document.getElementById('collapse-footer-nav');
-        bottom.scrollIntoView();
     });
 }
 /**
