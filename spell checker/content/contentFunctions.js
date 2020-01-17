@@ -104,10 +104,10 @@ function sendErrorCount() {
 function pointAt(index) {
     if (index == 1) {
         errorList[index-1].scrollIntoView();
-        errorList[index-1].classList.add('blink-efect');
+        errorList[index-1].classList.add('blink-effect');
     } else {
-        errorList[index-2].classList.remove('blink-efect');
+        document.querySelector('.blink-effect').classList.remove('blink-effect');
         errorList[index-1].scrollIntoView();
-        errorList[index-1].classList.add('blink-efect');
+        errorList[index-1].classList.add('blink-effect');
     }
 }

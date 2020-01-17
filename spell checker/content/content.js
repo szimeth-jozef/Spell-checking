@@ -17,7 +17,7 @@ console.log("Request sent");
  */
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.command === "Result") {
-        // console.log(request.word, request.res);
+        console.log(request.word, request.res);
         if (request.wrapMode === "single") {
             const isLast = VirtualElementHolder[request.index].wrapSingleWord(request.res, request.word);
             if (isLast) sendErrorCount();

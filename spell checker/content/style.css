@@ -35,9 +35,8 @@
 }
 
 .blink-effect {
-    animation: ease-in 1s;
-    /* animation-name: blink; */
-    /* animation-duration: 1s; */
+    animation-name: blink;
+    animation-duration: 1s;
 }
 
 @keyframes blink {
