@@ -1,4 +1,5 @@
 console.log("Background script console...");
+console.log("...of the master branch");
 
 const dicUrl = chrome.runtime.getURL('./dictionaries/sk_SK/sk_SK.dic');
 const affUrl = chrome.runtime.getURL('./dictionaries/sk_SK/sk_SK.aff');
