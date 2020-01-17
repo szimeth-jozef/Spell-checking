@@ -97,4 +97,17 @@ function sendErrorCount() {
     const errors = document.getElementsByClassName('misspell-highlight-SCH-Extension-' + currentHighlightColor);
     chrome.runtime.sendMessage({command:"ForwardErrorCount", count: errors.length, pointer: errorPointerAt});
     errorList = errors;
+    pointAt(errorPointerAt);
+}
+
+
+function pointAt(index) {
+    if (index == 1) {
+        errorList[index-1].scrollIntoView();
+        errorList[index-1].classList.add('blink-efect');
+    } else {
+        errorList[index-2].classList.remove('blink-efect');
+        errorList[index-1].scrollIntoView();
+        errorList[index-1].classList.add('blink-efect');
+    }
 }

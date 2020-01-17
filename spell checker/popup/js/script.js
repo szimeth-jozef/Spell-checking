@@ -71,11 +71,24 @@ window.onload = () => {
     // Listeners for stepping forward or backward between errors
     document.getElementById('step-back-btn').addEventListener('click', function(event){
         console.log('Stepped backward');
+        let currentPointer = Number(document.getElementById('currently-on').innerText);
+        if (currentPointer > 1) {
+            currentPointer--;
+            makeRequest({ command: "UpdatePointer", pointer: currentPointer, color: null});
+            document.getElementById('currently-on').innerText = String(currentPointer);
+        }
     });
 
     document.getElementById('step-forward-btn').addEventListener('click', function(event){
         // bottom.scrollIntoView();
         console.log('Stepped forward');
+        let currentPointer = Number(document.getElementById('currently-on').innerText);
+        const errorCount = Number(document.getElementById('spell-errors').innerText);
+        if (currentPointer < errorCount) {
+            currentPointer++;
+            makeRequest({ command: "UpdatePointer", pointer: currentPointer, color: null});
+            document.getElementById('currently-on').innerText = String(currentPointer);
+        }
     });
 }
 /**

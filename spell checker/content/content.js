@@ -35,6 +35,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.command === "GetBtnState") {
         chrome.runtime.sendMessage({command:"ForwardBtnState", state: highlightBtnState});
     }
+    if (request.command === "UpdatePointer") {
+        errorPointerAt = request.pointer;
+        pointAt(errorPointerAt);
+    }
     if (request.command === "GetErrorCount") chrome.runtime.sendMessage({command:"ForwardErrorCount", count: errorList.length, pointer: errorPointerAt});;
 
     if (request.color !== null) {
