@@ -24,16 +24,14 @@ class VirtualElement {
      * @description - Main method of VirtualElemet class, it executes the checking procedure
      */
     check() {
-        const words = this.node.textContent.split(/\s+/g);
+        const words = this.cleanWordList(this.node.textContent.split(/\s+/g));
         if (words.length > 1) {
 
             for (let i = 0; i < words.length; i++) {
-                if (words[i].trim().length !== 0) {
-                    if (i === words.length - 1) {
-                        this.compare(words[i], this.getRidOfPunctuation(words[i]), 'multi', true);
-                    } else {
-                        this.compare(words[i], this.getRidOfPunctuation(words[i]), 'multi');
-                    }
+                if (i === words.length - 1) {
+                    this.compare(words[i], this.getRidOfPunctuation(words[i]), 'multi', true);
+                } else {
+                    this.compare(words[i], this.getRidOfPunctuation(words[i]), 'multi');
                 }
             }
 
@@ -149,5 +147,19 @@ class VirtualElement {
         let clsWord = word.replace(regex, ""); 
         clsWord = clsWord.replace(questionMark, "");
         return clsWord; 
+    }
+
+    /**
+     * @description This function cleans out empty strings from the array
+     * @param {Array<String>} wl List of words from splite TextNode 
+     */
+    cleanWordList(wl) {
+        const cleanArray = [];
+        for (const str of wl) {
+            if (str.trim().length !== 0) {
+                cleanArray.push(str);
+            }
+        }
+        return cleanArray;
     }
 }
