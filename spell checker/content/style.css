@@ -36,7 +36,7 @@
 
 .blink-effect {
     animation-name: blink;
-    animation-duration: 1s;
+    animation-duration: 0.5s;
 }
 
 @keyframes blink {

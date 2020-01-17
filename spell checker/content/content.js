@@ -4,6 +4,7 @@ let highlightBtnState = undefined;
 let VirtualElementHolder = [];
 let errorList = [];
 let errorPointerAt = 0;
+const listOfSuggestions = [];
 
 const body = document.querySelectorAll('body *');
 const filteredElements = preFilter(body);
@@ -18,6 +19,8 @@ console.log("Request sent");
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.command === "Result") {
         console.log(request.word, request.res);
+        if (request.sug) listOfSuggestions.push(request.sug);
+        console.log(request.sug);
         if (request.wrapMode === "single") {
             const isLast = VirtualElementHolder[request.index].wrapSingleWord(request.res, request.word);
             if (isLast) sendErrorCount();
@@ -39,8 +42,17 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         errorPointerAt = request.pointer;
         pointAt(errorPointerAt);
     }
-    if (request.command === "GetErrorCount") chrome.runtime.sendMessage({command:"ForwardErrorCount", count: errorList.length, pointer: errorPointerAt});;
+    if (request.command === "GetErrorCount") {
+        chrome.runtime.sendMessage({command:"ForwardErrorCount", count: errorList.length, pointer: errorPointerAt});
 
+        if (errorPointerAt !== 0) {
+            chrome.runtime.sendMessage({
+                command:"SetMisspelledInfo", 
+                misspelled:errorList[errorPointerAt-1].innerText, 
+                suggestions: listOfSuggestions[errorPointerAt-1]
+            });
+        }
+    }
     if (request.color !== null) {
         changeHighlightColorTo(request.color);
     }

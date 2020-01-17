@@ -13,6 +13,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         document.getElementById('spell-errors').innerText = String(request.count);
         document.getElementById('currently-on').innerText = String(request.pointer);
     }
+    if (request.command === "SetMisspelledInfo") {
+        document.getElementById('misspelled-word').innerText = String(request.misspelled);
+        document.getElementById('suggestion').innerText = String(request.suggestions.join());
+    }
 });
 
 window.onload = () => {
