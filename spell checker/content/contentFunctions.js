@@ -112,7 +112,10 @@ function pointAt(index) {
     catch(error) {
         console.log("Go through after color change");
     }
-    errorList[index-1].scrollIntoView();
+    errorList[index-1].scrollIntoView({
+        behavior: "smooth",
+        block: "center"
+    });
     errorList[index-1].classList.add('blink-effect');
     
 }

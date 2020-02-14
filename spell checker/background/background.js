@@ -60,9 +60,15 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         const result = dictionary.check(request.word);
         // The problem with suggestions is that it really slows down the program
         // To enable suggestions ucomment the line below and in sendMessage change sug object property form null to suggestions
-        // const suggestions = (!result) ? dictionary.suggest(request.word) : null;
+
+        const suggestions = (!result) ? dictionary.suggest(request.word) : null;
         chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
-            chrome.tabs.sendMessage(tabs[0].id, {command:"Result", res: result, sug: null, word: request.original, index: request.index, wrapMode: request.mode, apply: request.apply, color: null});
+            chrome.tabs.sendMessage(tabs[0].id, {command:"Result", res: result, sug: suggestions, word: request.original, index: request.index, wrapMode: request.mode, apply: request.apply, color: null});
+        });
+    }
+    if (request.command === "SkipThis") {
+        chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
+            chrome.tabs.sendMessage(tabs[0].id, {command:"Result", res: true, sug: null, word: request.original, index: request.index, wrapMode: request.mode, apply: request.apply, color: null});
         });
     }
 });
