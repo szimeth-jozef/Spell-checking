@@ -126,14 +126,26 @@ class VirtualElement {
      * @param {boolean} apply Indicates wheather to use method applyNodeCache
      */
     compare(orgWord, word, wrapMode, apply=false) {
-        chrome.runtime.sendMessage({
-            command:"CheckThis", 
-            word: word, 
-            original: orgWord, 
-            mode: wrapMode, 
-            index: this.index, 
-            apply:apply
-        });
+        if (this.isAlphabetic(word)) {
+            chrome.runtime.sendMessage({
+                command:"CheckThis", 
+                word: word, 
+                original: orgWord, 
+                mode: wrapMode, 
+                index: this.index, 
+                apply:apply
+            });
+        } 
+        else {
+            chrome.runtime.sendMessage({
+                command:"SkipThis", 
+                word: word, 
+                original: orgWord, 
+                mode: wrapMode, 
+                index: this.index, 
+                apply:apply
+            });
+        }
     }
 
     /**
@@ -161,5 +173,49 @@ class VirtualElement {
             }
         }
         return cleanArray;
+    }
+
+    /**
+     * @description Check if the word is a set of alphabetic characters and not number or other characters
+     * @param {string} word Tested string
+     * @returns A boolean value based on validity, true if it's not a non-alphabetic set otherwise false
+     */
+    isAlphabetic(word) {
+        return isNaN(word);
+    }
+}
+
+
+class NodeCache {
+    constructor() {
+        this.usedIndexes = []
+        this.cacheContent = []
+        this.length = 0;
+    }
+
+    addToCache(element, index=null) {
+        if (index) {
+            this.cacheContent.push({
+                index: index,
+                content: element
+            });
+            this.usedIndexes.push(index);
+        }
+        else {
+            this.CacheContent.push({
+                index: this.getFreeIndex(),
+                content: element
+            });
+        }
+        this.length++;
+    }
+
+    getFreeIndex() {
+        let index = 0;
+        while(this.usedIndexes.includes(index)) {
+            index++;
+        }
+        this.usedIndexes.push(index);
+        return index;
     }
 }
