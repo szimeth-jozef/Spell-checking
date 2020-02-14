@@ -18,7 +18,18 @@
             <div id="blue" class="color-box" style="background-color: blue;"></div>
             <div id="white" class="color-box" style="background-color: white;"></div>
             <div id="red" class="color-box" style="background-color: red;"></div>
+            <div class="stepper-container">
+                <p><span id="currently-on">0</span>/<span id="spell-errors">0</span></p>
+                <div class="buttons">
+                    <button id="step-back-btn">&lt</button>
+                    <button id="step-forward-btn">&gt</button>
+                </div>
+            </div>
         </div>
+    </div>
+    <div class="info-panel">
+        <p>Misspelled: <span id="misspelled-word"></span></p>
+        <p>Suggestion: <span id="suggestion"></span></p>
     </div>
     <div class="interface">
         <div class="check-btn">

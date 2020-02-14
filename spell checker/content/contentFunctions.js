@@ -88,5 +88,31 @@ function changeHighlightColorTo(color) {
             spans[i].className = 'misspell-highlight-SCH-Extension-' + color;
         }
         currentHighlightColor = color;
+
+        const errors = document.getElementsByClassName('misspell-highlight-SCH-Extension-' + currentHighlightColor);
+        errorList = errors;
     }
+}
+
+
+function sendErrorCount() {
+    errorPointerAt = 1;
+    const errors = document.getElementsByClassName('misspell-highlight-SCH-Extension-' + currentHighlightColor);
+    chrome.runtime.sendMessage({command:"ForwardErrorCount", count: errors.length, pointer: errorPointerAt});
+    errorList = errors;
+    pointAt(errorPointerAt);
+}
+
+
+function pointAt(index) {
+    chrome.runtime.sendMessage({command:"SetMisspelledInfo", misspelled:errorList[index-1].innerText, suggestions: listOfSuggestions[index-1]});
+    try {
+        document.querySelector('.blink-effect').classList.remove('blink-effect');
+    }
+    catch(error) {
+        console.log("Go through after color change");
+    }
+    errorList[index-1].scrollIntoView();
+    errorList[index-1].classList.add('blink-effect');
+    
 }

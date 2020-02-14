@@ -34,6 +34,16 @@
     display: inline;
 }
 
+.blink-effect {
+    animation-name: blink;
+    animation-duration: 0.5s;
+}
+
+@keyframes blink {
+    from { color: white; background-color: black;}
+    to { color: black; background-color: white;}
+}
+
 /* .misspell-highlight-SCH-Extension {
     display: inline-block;
     position: relative;
