@@ -1,6 +1,10 @@
 console.log("Background script console...");
 console.log("...of the master branch");
 
+
+// By default the browser action is disabled so we can't run spell check while everything isn't loaded.
+chrome.browserAction.disable();
+
 const dicUrl = chrome.runtime.getURL('./dictionaries/sk_SK/sk_SK.dic');
 const affUrl = chrome.runtime.getURL('./dictionaries/sk_SK/sk_SK.aff');
 
@@ -32,43 +36,52 @@ async function loadDictionary() {
 //     console.log(`Loaded in ${t4 - t3} ms`)
 // });
 
-/**
- * @description This below is using typo.js
- */
-const dictionary = new Typo("sk_SK", false, false, { dictionaryPath: "./dictionaries" });
 
-/**
- * @description - by default the browser action is disabled so we can't run spell check while everything isn't loaded.
- */
-chrome.browserAction.disable();
+// Typojs dictionary instance 
+// const dictionary = new Typo("sk_SK", false, false, { dictionaryPath: "./dictionaries" });
 
-/**
- * @description - Here the event listener is waiting for a request from content script to enable the popup menu.
- */
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    console.log("We have got", request);
-    if (request.command === "DisableButton") {
-        chrome.browserAction.disable();
-    }
-    if (request.command === "EnableButton") {
-        chrome.browserAction.enable();
-    }
-    if (request.command === "ForwardBtnState") {
-        chrome.runtime.sendMessage({command:"SetBtnText", state: request.state});
-    }
-    if (request.command === "CheckThis") {
-        const result = dictionary.check(request.word);
-        // The problem with suggestions is that it really slows down the program
-        // To enable suggestions ucomment the line below and in sendMessage change sug object property form null to suggestions
+const worker = new Worker(chrome.runtime.getURL("./background/suggestions_worker.js"));
 
-        const suggestions = (!result) ? dictionary.suggest(request.word) : null;
-        chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
-            chrome.tabs.sendMessage(tabs[0].id, {command:"Result", res: result, sug: suggestions, word: request.original, index: request.index, wrapMode: request.mode, apply: request.apply, color: null});
-        });
+if (window.Worker) {
+    // Worker post actions
+
+    // Worker receiver section
+    worker.onmessage = function(e) {
+        const res = e.data;
+
+        if (res.command === "ForwardResults") {
+            chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
+                chrome.tabs.sendMessage(tabs[0].id, {command:"Result", res: res.result, sug: res.suggestions, word: res.original, index: res.index, wrapMode: res.mode, apply: res.apply, color: null});
+            });
+        }
     }
-    if (request.command === "SkipThis") {
-        chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
-            chrome.tabs.sendMessage(tabs[0].id, {command:"Result", res: true, sug: null, word: request.original, index: request.index, wrapMode: request.mode, apply: request.apply, color: null});
-        });
-    }
-});
+
+    // Chrome event listener
+    chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+        console.log("We have got", request);
+        if (request.command === "DisableButton") {
+            chrome.browserAction.disable();
+        }
+        if (request.command === "EnableButton") {
+            chrome.browserAction.enable();
+        }
+        if (request.command === "ForwardBtnState") {
+            chrome.runtime.sendMessage({command:"SetBtnText", state: request.state});
+        }
+        if (request.command === "CheckThis") {
+            worker.postMessage(request);
+            // const result = dictionary.check(request.word);
+            // To enable suggestions ucomment the line below and in sendMessage change sug object property form null to suggestions
+    
+            
+        }
+        if (request.command === "SkipThis") {
+            chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
+                chrome.tabs.sendMessage(tabs[0].id, {command:"Result", res: true, sug: null, word: request.original, index: request.index, wrapMode: request.mode, apply: request.apply, color: null});
+            });
+        }
+    });
+
+} else {
+    console.error("There is no worker instance!");
+}
