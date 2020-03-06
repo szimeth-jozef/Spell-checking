@@ -51,6 +51,7 @@ class VirtualElement {
     wrapSingleWord(result, word) {
         if (!result) {
             const wrapTag = document.createElement('span');
+            wrapTag.setAttribute("id", getUUID());
             wrapTag.setAttribute('class', 'misspell-highlight-SCH-Extension-' + currentHighlightColor);
             wrapTag.appendChild(document.createTextNode(word));
             // Finally replace old textNode with wrapTag
@@ -72,6 +73,7 @@ class VirtualElement {
         }
         else {
             const wrapTag = document.createElement('span');
+            wrapTag.setAttribute("id", getUUID());
             wrapTag.setAttribute('class', 'misspell-highlight-SCH-Extension-' + currentHighlightColor);
             wrapTag.appendChild(document.createTextNode(word + " "));
             this.nodeCache.push(wrapTag);

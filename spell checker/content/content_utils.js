@@ -119,3 +119,10 @@ function pointAt(index) {
     errorList[index-1].classList.add('blink-effect');
     
 }
+
+function getUUID() {
+    const int = Math.floor(Math.random() * Math.floor(Math.random() * Date.now()));
+    return int.toString(16);
+}
+
+

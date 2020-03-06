@@ -26,10 +26,12 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         }
         if (request.wrapMode === "single") {
             const isLast = VirtualElementHolder[request.index].wrapSingleWord(request.res, request.word);
-            if (isLast) sendErrorCount();
+            // if (isLast) sendErrorCount();
+            sendErrorCount();
         } else {
             const isLast = VirtualElementHolder[request.index].wrapMultiWord(request.res, request.word, request.apply);
-            if (isLast) sendErrorCount();
+            // if (isLast) sendErrorCount();
+            sendErrorCount();
         }
     }
     if (request.command === "DoCheck") {

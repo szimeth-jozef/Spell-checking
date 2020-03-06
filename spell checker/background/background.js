@@ -1,15 +1,36 @@
 console.log("Background script console...");
 console.log("...of the master branch");
 
+class Queue {
+    constructor() {
+        this.queue = [];
+    }
+
+    enqueue(element) {
+        this.queue.push(element);
+    }
+
+    dequeue() {
+        if(this.isEmpty()) {
+            return undefined;
+        }
+        return this.queue.shift();
+    }
+
+    isEmpty() {
+        return this.queue.length === 0;
+    }
+}
+
+const queue = new Queue();
+let initWork = false;
+
 
 // By default the browser action is disabled so we can't run spell check while everything isn't loaded.
 chrome.browserAction.disable();
 
 const dicUrl = chrome.runtime.getURL('./dictionaries/sk_SK/sk_SK.dic');
 const affUrl = chrome.runtime.getURL('./dictionaries/sk_SK/sk_SK.aff');
-
-// If you want to use dictParser.js instead uncomment this and the loadDictionary call.
-// const dictionary = new Spellchecker();
 
 /**
  * @description Loads the dictionary file and the aff file then returns them as a single object
@@ -28,15 +49,6 @@ async function loadDictionary() {
     return {aff: affData, dic: dicData};
 }
 
-// loadDictionary().then(rawDict => {
-//     const t3 = performance.now();
-//     const DICT = dictionary.parse(rawDict);
-//     dictionary.use(DICT);
-//     const t4 = performance.now();
-//     console.log(`Loaded in ${t4 - t3} ms`)
-// });
-
-
 // Typojs dictionary instance 
 // const dictionary = new Typo("sk_SK", false, false, { dictionaryPath: "./dictionaries" });
 
@@ -53,6 +65,9 @@ if (window.Worker) {
             chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
                 chrome.tabs.sendMessage(tabs[0].id, {command:"Result", res: res.result, sug: res.suggestions, word: res.original, index: res.index, wrapMode: res.mode, apply: res.apply, color: null});
             });
+            if (!queue.isEmpty()) {
+                worker.postMessage(queue.dequeue());
+            }
         }
     }
 
@@ -69,11 +84,11 @@ if (window.Worker) {
             chrome.runtime.sendMessage({command:"SetBtnText", state: request.state});
         }
         if (request.command === "CheckThis") {
-            worker.postMessage(request);
-            // const result = dictionary.check(request.word);
-            // To enable suggestions ucomment the line below and in sendMessage change sug object property form null to suggestions
-    
-            
+            if (!initWork) {
+                worker.postMessage(request);
+                initWork = true;
+            }
+            queue.enqueue(request);
         }
         if (request.command === "SkipThis") {
             chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
