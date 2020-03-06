@@ -2,9 +2,10 @@
 const blackListTags = ['SCRIPT', 'NOSCRIPT', 'LINK', 'IMG', 'STYLE'];
 let highlightBtnState = undefined;
 let VirtualElementHolder = [];
-let errorList = [];
+// const errorTagsList = [];
 let errorPointerAt = 0;
-const listOfSuggestions = [];
+const listOfMisspell = [];
+// const listOfMisspell = new Set();
 
 const body = document.querySelectorAll('body *');
 const filteredElements = preFilter(body);
@@ -20,19 +21,32 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.command === "Result") {
         console.log(request.word, request.res);
 
-        if (!request.res) {
-            listOfSuggestions.push(request.sug);
-            console.log(request.sug);
-        }
         if (request.wrapMode === "single") {
-            const isLast = VirtualElementHolder[request.index].wrapSingleWord(request.res, request.word);
+            const elementID = VirtualElementHolder[request.index].wrapSingleWord(request.res, request.word);
+            listOfMisspell.push({
+                word: request.word,
+                id: elementID,
+                suggestions: request.sug,
+                tag: null
+            });
             // if (isLast) sendErrorCount();
             sendErrorCount();
         } else {
-            const isLast = VirtualElementHolder[request.index].wrapMultiWord(request.res, request.word, request.apply);
+            const elementID = VirtualElementHolder[request.index].wrapMultiWord(request.res, request.word, request.apply);
+            // elementIDs.forEach(id => listOfMisspell.push(id));
+            if (elementID) {
+                listOfMisspell.push({
+                    word: request.word,
+                    id: elementID,
+                    suggestions: request.sug,
+                    tag: null
+                });
+            }
+
             // if (isLast) sendErrorCount();
             sendErrorCount();
         }
+        console.log(listOfMisspell);
     }
     if (request.command === "DoCheck") {
         spellCheck();
@@ -48,13 +62,13 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         pointAt(errorPointerAt);
     }
     if (request.command === "GetErrorCount") {
-        chrome.runtime.sendMessage({command:"ForwardErrorCount", count: errorList.length, pointer: errorPointerAt});
+        chrome.runtime.sendMessage({command:"ForwardErrorCount", count: listOfMisspell.length, pointer: errorPointerAt});
 
         if (errorPointerAt !== 0) {
             chrome.runtime.sendMessage({
                 command:"SetMisspelledInfo", 
-                misspelled:errorList[errorPointerAt-1].innerText, 
-                suggestions: listOfSuggestions[errorPointerAt-1]
+                misspelled:listOfMisspell[errorPointerAt-1].tag.innerText, 
+                suggestions: listOfMisspell[errorPointerAt-1].suggestions
             });
         }
     }
