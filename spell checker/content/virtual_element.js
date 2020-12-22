@@ -14,6 +14,7 @@ class VirtualElement {
     constructor(textNode, i, is_last=false)  {
         this.node = textNode;
         this.index = i;
+        // TODO: for now is_last is deprecated, if this stays then remove this property
         this.is_last = is_last;
         this.parentNode = textNode.parentNode;
         this.nodeCache = [];
@@ -51,12 +52,14 @@ class VirtualElement {
     wrapSingleWord(result, word) {
         if (!result) {
             const wrapTag = document.createElement('span');
+            wrapTag.setAttribute("id", getUUID());
             wrapTag.setAttribute('class', 'misspell-highlight-SCH-Extension-' + currentHighlightColor);
             wrapTag.appendChild(document.createTextNode(word));
             // Finally replace old textNode with wrapTag
             this.node.replaceWith(wrapTag);
         }
-        return this.is_last;
+        // return this.is_last;
+        return wrapTag.id;
     }
 
     /**
@@ -67,11 +70,13 @@ class VirtualElement {
      * @returns {boolean} returns whether this object is last or not
      */
     wrapMultiWord(result, word, canApply) {
+        let wrapTag;
         if (result) {
             this.nodeCache.push(document.createTextNode(word + " "));
         }
         else {
-            const wrapTag = document.createElement('span');
+            wrapTag = document.createElement('span');
+            wrapTag.setAttribute("id", getUUID());
             wrapTag.setAttribute('class', 'misspell-highlight-SCH-Extension-' + currentHighlightColor);
             wrapTag.appendChild(document.createTextNode(word + " "));
             this.nodeCache.push(wrapTag);
@@ -80,9 +85,13 @@ class VirtualElement {
 
         if (canApply) {
             this.applyNodeCache();
+            return this.getNodeCacheIDs();
         }
 
-        return this.is_last;
+        if (wrapTag) {
+            return wrapTag.id;
+        }
+        return null;
     }
 
     /**

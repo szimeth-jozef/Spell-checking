@@ -22,7 +22,7 @@
             "file:///home/joco/GitHub/Spell-checking/spell%20checker/test-page.html"
         ],
         "css": [ "content/style.css" ],
-        "js": ["content/contentFunctions.js", "content/content.js", "content/virtual_element.js"]
+        "js": ["content/content_utils.js", "content/content.js", "content/virtual_element.js"]
         }
     ],
     "background": {

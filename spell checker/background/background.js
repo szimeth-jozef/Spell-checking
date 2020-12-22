@@ -1,11 +1,36 @@
 console.log("Background script console...");
 console.log("...of the master branch");
 
+class Queue {
+    constructor() {
+        this.queue = [];
+    }
+
+    enqueue(element) {
+        this.queue.push(element);
+    }
+
+    dequeue() {
+        if(this.isEmpty()) {
+            return undefined;
+        }
+        return this.queue.shift();
+    }
+
+    isEmpty() {
+        return this.queue.length === 0;
+    }
+}
+
+const queue = new Queue();
+let initWork = false;
+
+
+// By default the browser action is disabled so we can't run spell check while everything isn't loaded.
+chrome.browserAction.disable();
+
 const dicUrl = chrome.runtime.getURL('./dictionaries/sk_SK/sk_SK.dic');
 const affUrl = chrome.runtime.getURL('./dictionaries/sk_SK/sk_SK.aff');
-
-// If you want to use dictParser.js instead uncomment this and the loadDictionary call.
-// const dictionary = new Spellchecker();
 
 /**
  * @description Loads the dictionary file and the aff file then returns them as a single object
@@ -24,51 +49,54 @@ async function loadDictionary() {
     return {aff: affData, dic: dicData};
 }
 
-// loadDictionary().then(rawDict => {
-//     const t3 = performance.now();
-//     const DICT = dictionary.parse(rawDict);
-//     dictionary.use(DICT);
-//     const t4 = performance.now();
-//     console.log(`Loaded in ${t4 - t3} ms`)
-// });
+// Typojs dictionary instance 
+// const dictionary = new Typo("sk_SK", false, false, { dictionaryPath: "./dictionaries" });
 
-/**
- * @description This below is using typo.js
- */
-const dictionary = new Typo("sk_SK", false, false, { dictionaryPath: "./dictionaries" });
+const worker = new Worker(chrome.runtime.getURL("./background/suggestions_worker.js"));
 
-/**
- * @description - by default the browser action is disabled so we can't run spell check while everything isn't loaded.
- */
-chrome.browserAction.disable();
+if (window.Worker) {
+    // Worker post actions
 
-/**
- * @description - Here the event listener is waiting for a request from content script to enable the popup menu.
- */
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    console.log("We have got", request);
-    if (request.command === "DisableButton") {
-        chrome.browserAction.disable();
-    }
-    if (request.command === "EnableButton") {
-        chrome.browserAction.enable();
-    }
-    if (request.command === "ForwardBtnState") {
-        chrome.runtime.sendMessage({command:"SetBtnText", state: request.state});
-    }
-    if (request.command === "CheckThis") {
-        const result = dictionary.check(request.word);
-        // The problem with suggestions is that it really slows down the program
-        // To enable suggestions ucomment the line below and in sendMessage change sug object property form null to suggestions
+    // Worker receiver section
+    worker.onmessage = function(e) {
+        const res = e.data;
 
-        const suggestions = (!result) ? dictionary.suggest(request.word) : null;
-        chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
-            chrome.tabs.sendMessage(tabs[0].id, {command:"Result", res: result, sug: suggestions, word: request.original, index: request.index, wrapMode: request.mode, apply: request.apply, color: null});
-        });
+        if (res.command === "ForwardResults") {
+            chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
+                chrome.tabs.sendMessage(tabs[0].id, {command:"Result", res: res.result, sug: res.suggestions, word: res.original, index: res.index, wrapMode: res.mode, apply: res.apply, color: null});
+            });
+            if (!queue.isEmpty()) {
+                worker.postMessage(queue.dequeue());
+            }
+        }
     }
-    if (request.command === "SkipThis") {
-        chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
-            chrome.tabs.sendMessage(tabs[0].id, {command:"Result", res: true, sug: null, word: request.original, index: request.index, wrapMode: request.mode, apply: request.apply, color: null});
-        });
-    }
-});
+
+    // Chrome event listener
+    chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+        console.log("We have got", request);
+        if (request.command === "DisableButton") {
+            chrome.browserAction.disable();
+        }
+        if (request.command === "EnableButton") {
+            chrome.browserAction.enable();
+        }
+        if (request.command === "ForwardBtnState") {
+            chrome.runtime.sendMessage({command:"SetBtnText", state: request.state});
+        }
+        if (request.command === "CheckThis") {
+            if (!initWork) {
+                worker.postMessage(request);
+                initWork = true;
+            }
+            queue.enqueue(request);
+        }
+        if (request.command === "SkipThis") {
+            chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
+                chrome.tabs.sendMessage(tabs[0].id, {command:"Result", res: true, sug: null, word: request.original, index: request.index, wrapMode: request.mode, apply: request.apply, color: null});
+            });
+        }
+    });
+
+} else {
+    console.error("There is no worker instance!");
+}

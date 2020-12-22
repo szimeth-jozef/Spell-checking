@@ -97,25 +97,36 @@ function changeHighlightColorTo(color) {
 
 function sendErrorCount() {
     errorPointerAt = 1;
-    const errors = document.getElementsByClassName('misspell-highlight-SCH-Extension-' + currentHighlightColor);
-    chrome.runtime.sendMessage({command:"ForwardErrorCount", count: errors.length, pointer: errorPointerAt});
-    errorList = errors;
+    // const errors = document.getElementsByClassName('misspell-highlight-SCH-Extension-' + currentHighlightColor);
+    for (const el of listOfMisspell) {
+        // errorTagsList.push(document.getElementById(String(id)));
+        el['tag'] = document.getElementById(String(el.id));
+    }
+    chrome.runtime.sendMessage({command:"ForwardErrorCount", count: listOfMisspell.length, pointer: errorPointerAt});
+    // errorList = errors;
     pointAt(errorPointerAt);
 }
 
 
 function pointAt(index) {
-    chrome.runtime.sendMessage({command:"SetMisspelledInfo", misspelled:errorList[index-1].innerText, suggestions: listOfSuggestions[index-1]});
+    chrome.runtime.sendMessage({command:"SetMisspelledInfo", misspelled:listOfMisspell[index-1].tag.innerText, suggestions: listOfMisspell[index-1].suggestions});
     try {
         document.querySelector('.blink-effect').classList.remove('blink-effect');
     }
     catch(error) {
         console.log("Go through after color change");
     }
-    errorList[index-1].scrollIntoView({
+    listOfMisspell[index-1].tag.scrollIntoView({
         behavior: "smooth",
         block: "center"
     });
-    errorList[index-1].classList.add('blink-effect');
+    listOfMisspell[index-1].tag.classList.add('blink-effect');
     
 }
+
+function getUUID() {
+    const int = Math.floor(Math.random() * Math.floor(Math.random() * Date.now()));
+    return int.toString(16);
+}
+
+
